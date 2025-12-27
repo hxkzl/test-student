@@ -199,20 +199,16 @@
     </footer>
 
     <script type="module">
-        // 1. 引入 Firebase SDK (包含 Auth)
+        // 1. 引入 Firebase SDK (包含 Auth & Firestore)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { 
-    getFirestore, collection, getDocs, getDoc, addDoc, updateDoc, deleteDoc, 
-    doc, serverTimestamp, query, orderBy, limit, where 
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { 
-    getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged 
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        // ... (Config 保持不變)
+        import { 
+            getFirestore, collection, getDocs, getDoc, addDoc, updateDoc, deleteDoc, 
+            doc, serverTimestamp, query, orderBy, limit, where 
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { 
+            getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged 
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app); // 初始化 Auth
         // ============================================
         // ⚠️ Config
         // ============================================
@@ -232,7 +228,7 @@ const auth = getAuth(app); // 初始化 Auth
             if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
                 const app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
-                auth = getAuth(app);
+                auth = getAuth(app); // 初始化 Auth
                 console.log("✅ Firebase 連線成功！");
             } else {
                 console.warn("⚠️ Firebase Config 未設定，目前使用靜態資料模式。");
@@ -392,6 +388,80 @@ const auth = getAuth(app); // 初始化 Auth
             return { month, day };
         }
 
+        // --- AUTH LOGIC (RBAC) ---
+        // 監聽登入狀態改變並獲取權限
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                console.log("User logged in:", user.email);
+                try {
+                    // 登入後，去 users 集合讀取該 UID 的文件以獲取 role
+                    const userDocRef = doc(db, "users", user.uid);
+                    const userDocSnap = await getDoc(userDocRef);
+                    
+                    if (userDocSnap.exists()) {
+                        const userData = userDocSnap.data();
+                        APP_STATE.user = {
+                            uid: user.uid,
+                            email: user.email,
+                            name: userData.name || user.email,
+                            role: userData.role || 'guest'
+                        };
+                        
+                        // 僅在視圖切換到 admin 時才顯示提示，避免每次重整都彈窗
+                        if(APP_STATE.view === 'admin') {
+                            Swal.fire({
+                                icon: 'success',
+                                title: `歡迎, ${APP_STATE.user.name}`,
+                                text: `您的身份是: ${getRoleName(APP_STATE.user.role)}`,
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                        }
+                    } else {
+                        // 有 Auth 帳號但沒有 Firestore 資料 (可能是普通學生)
+                        APP_STATE.user = { uid: user.uid, email: user.email, role: 'student', name: '同學' };
+                    }
+                } catch (error) {
+                    console.error("Error fetching user role:", error);
+                    APP_STATE.user = { uid: user.uid, email: user.email, role: 'student', name: '同學' };
+                }
+            } else {
+                APP_STATE.user = null;
+            }
+            // 如果當前在後台頁面，重新渲染以更新 UI
+            if (APP_STATE.view === 'admin') render();
+        });
+
+        // 輔助：將英文 role 轉中文名稱
+        function getRoleName(role) {
+            const map = {
+                'president': '會長', 'admin': '行政', 'rights': '權益', 
+                'finance': '財務', 'club': '社團', 'activity': '活動', 'student': '學生'
+            };
+            return map[role] || role;
+        }
+
+        // 修改後的登入函式 (綁定到登入表單)
+        window.handleLogin = async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('admin-email').value;
+            const pwd = document.getElementById('admin-pwd').value;
+            
+            try {
+                await signInWithEmailAndPassword(auth, email, pwd);
+                // onAuthStateChanged 會自動處理後續
+            } catch (error) {
+                console.error(error);
+                Swal.fire('登入失敗', '帳號或密碼錯誤 (請確認已在 Firebase Console 建立使用者並設定 Firestore)', 'error');
+            }
+        };
+
+        window.handleLogout = async () => {
+            await signOut(auth);
+            Swal.fire('已登出', '', 'success');
+            navigate('home');
+        };
+
         // --- Firebase Data Handling ---
         
         async function loadDataFromFirebase() {
@@ -453,36 +523,6 @@ const auth = getAuth(app); // 初始化 Auth
             }
         }
 
-        // --- Auth & Admin Logic ---
-
-        if (auth) {
-            onAuthStateChanged(auth, (user) => {
-                APP_STATE.user = user;
-                if (APP_STATE.view === 'admin') render(); 
-            });
-        }
-
-        window.handleLogin = async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('admin-email').value;
-            const pwd = document.getElementById('admin-pwd').value;
-            try {
-                await signInWithEmailAndPassword(auth, email, pwd);
-                Swal.fire({ icon: 'success', title: '登入成功', timer: 1500, showConfirmButton: false });
-            } catch (error) {
-                Swal.fire('登入失敗', '請檢查帳號密碼', 'error');
-            }
-        };
-
-        window.handleLogout = async () => {
-            try {
-                await signOut(auth);
-                Swal.fire({ icon: 'success', title: '已登出', timer: 1000, showConfirmButton: false });
-            } catch (error) {
-                console.error(error);
-            }
-        };
-
         // --- Admin CRUD Operations ---
 
         window.switchAdminTab = (tab) => {
@@ -505,7 +545,7 @@ const auth = getAuth(app); // 初始化 Auth
                 });
                 Swal.fire('新增成功', '', 'success');
                 await loadDataFromFirebase();
-            } catch(e) { Swal.fire('錯誤', e.message, 'error'); }
+            } catch(e) { Swal.fire('錯誤 (權限不足?)', e.message, 'error'); }
         }
 
         window.addEvent = async () => {
@@ -528,7 +568,7 @@ const auth = getAuth(app); // 初始化 Auth
                 });
                 Swal.fire('新增成功', '', 'success');
                 await loadDataFromFirebase();
-            } catch(e) { Swal.fire('錯誤', e.message, 'error'); }
+            } catch(e) { Swal.fire('錯誤 (權限不足?)', e.message, 'error'); }
         }
 
         window.saveSystemSettings = async () => {
@@ -937,12 +977,26 @@ const auth = getAuth(app); // 初始化 Auth
                     </div>
                 `;
             } else {
-                // Dashboard
+                // Dashboard Logic based on Role
+                const role = APP_STATE.user.role;
+                const perms = {
+                    'president': ['all'],
+                    'admin': ['news', 'minutes', 'confessions'],
+                    'rights': ['complaints'],
+                    'finance': ['club_apps'], 
+                    'club': ['club_apps'],
+                    'activity': ['club_apps', 'events'],
+                    'student': []
+                };
+                const myPerms = perms[role] || [];
+                // Helper to check if user can see a feature
+                const can = (p) => role === 'president' || myPerms.includes(p);
+
                 const tab = APP_STATE.adminTab;
                 let contentHtml = '';
 
                 // Tab Content: News
-                if (tab === 'news') {
+                if (tab === 'news' && can('news')) {
                     const list = APP_DATA.announcements.filter(a => a.id && !a.id.startsWith('static_')).map(a => `
                          <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-700 p-3 rounded mb-2">
                             <div><p class="font-bold dark:text-white">${a.title_zh}</p><span class="text-xs text-gray-500">${a.date}</span></div>
@@ -966,7 +1020,7 @@ const auth = getAuth(app); // 初始化 Auth
                     `;
                 }
                 // Tab Content: Events
-                else if (tab === 'events') {
+                else if (tab === 'events' && can('events')) {
                      const list = APP_DATA.events.filter(e => e.id && !e.id.startsWith('e')).map(e => `
                          <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-700 p-3 rounded mb-2">
                             <div><p class="font-bold dark:text-white">${e.title_zh}</p><span class="text-xs text-gray-500">${e.date} | ${e.type}</span></div>
@@ -998,7 +1052,7 @@ const auth = getAuth(app); // 初始化 Auth
                     `;
                 }
                 // Tab Content: Confessions
-                else if (tab === 'confessions') {
+                else if (tab === 'confessions' && can('confessions')) {
                      const list = APP_DATA.confessionWall.filter(c => c.id && !c.id.startsWith('s')).map(c => `
                          <div class="border-b dark:border-gray-700 p-3 flex justify-between items-start">
                             <div>
@@ -1018,7 +1072,7 @@ const auth = getAuth(app); // 初始化 Auth
                     `;
                 }
                 // Tab Content: System Settings
-                else if (tab === 'system') {
+                else if (tab === 'system' && role === 'president') {
                     contentHtml = `
                         <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
                             <h3 class="font-bold mb-4 dark:text-white text-lg">系統全域設定</h3>
@@ -1032,6 +1086,9 @@ const auth = getAuth(app); // 初始化 Auth
                             <button onclick="saveSystemSettings()" class="bg-theme text-white px-6 py-2 rounded font-bold hover:bg-theme-dark transition">${t('save_btn')}</button>
                         </div>
                     `;
+                } else {
+                    // Default or Permission Denied
+                    contentHtml = `<div class="p-10 text-center text-gray-500">請從側邊欄選擇功能 (如果空白代表您無權限存取)</div>`;
                 }
 
                 return `
@@ -1040,11 +1097,14 @@ const auth = getAuth(app); // 初始化 Auth
                             <div class="mb-6 px-2">
                                 <h2 class="text-xl font-bold text-theme">${t('admin_dashboard')}</h2>
                                 <p class="text-xs text-gray-500 truncate">${APP_STATE.user.email}</p>
+                                <span class="text-xs bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded text-gray-600 dark:text-gray-300 mt-1 inline-block">${getRoleName(role)}</span>
                             </div>
-                            <button onclick="switchAdminTab('news')" class="text-left px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-800 ${tab==='news'?'bg-white dark:bg-gray-800 shadow font-bold text-theme':''}">${t('admin_news')}</button>
-                            <button onclick="switchAdminTab('events')" class="text-left px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-800 ${tab==='events'?'bg-white dark:bg-gray-800 shadow font-bold text-theme':''}">${t('admin_events')}</button>
-                            <button onclick="switchAdminTab('confessions')" class="text-left px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-800 ${tab==='confessions'?'bg-white dark:bg-gray-800 shadow font-bold text-theme':''}">${t('admin_confess')}</button>
-                            <button onclick="switchAdminTab('system')" class="text-left px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-800 ${tab==='system'?'bg-white dark:bg-gray-800 shadow font-bold text-theme':''}">${t('admin_system')}</button>
+                            
+                            ${can('news') ? `<button onclick="switchAdminTab('news')" class="text-left px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-800 ${tab==='news'?'bg-white dark:bg-gray-800 shadow font-bold text-theme':''}">${t('admin_news')}</button>` : ''}
+                            ${can('events') ? `<button onclick="switchAdminTab('events')" class="text-left px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-800 ${tab==='events'?'bg-white dark:bg-gray-800 shadow font-bold text-theme':''}">${t('admin_events')}</button>` : ''}
+                            ${can('confessions') ? `<button onclick="switchAdminTab('confessions')" class="text-left px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-800 ${tab==='confessions'?'bg-white dark:bg-gray-800 shadow font-bold text-theme':''}">${t('admin_confess')}</button>` : ''}
+                            ${role === 'president' ? `<button onclick="switchAdminTab('system')" class="text-left px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-800 ${tab==='system'?'bg-white dark:bg-gray-800 shadow font-bold text-theme':''}">${t('admin_system')}</button>` : ''}
+                            
                             <div class="mt-auto">
                                 <button onclick="handleLogout()" class="w-full text-left px-4 py-2 rounded text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20">${t('admin_logout')}</button>
                             </div>
