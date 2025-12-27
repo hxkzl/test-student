@@ -199,9 +199,10 @@
     </footer>
 
     <script type="module">
-        // 1. 引入 Firebase SDK
+        // 1. 引入 Firebase SDK (包含 Auth)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, addDoc, serverTimestamp, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, serverTimestamp, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         // ============================================
         // ⚠️ Config
@@ -216,10 +217,13 @@
         };
 
         let db = null;
+        let auth = null;
+
         try {
             if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
                 const app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
+                auth = getAuth(app);
                 console.log("✅ Firebase 連線成功！");
             } else {
                 console.warn("⚠️ Firebase Config 未設定，目前使用靜態資料模式。");
@@ -232,7 +236,7 @@
         const STATIC_DATA = {
             announcements: [
                 { 
-                    id: 1, 
+                    id: 'static_1', 
                     title_zh: '114學年度金勾盃歌唱比賽時程表', 
                     title_en: 'Jingle Bells Singing Contest Schedule', 
                     tag_zh: '活動', tag_en: 'Event', 
@@ -242,17 +246,17 @@
                 }
             ],
             confessionWall: [
-                { content: "傳情的巧克力真的很好吃，謝謝學姊！", content_en: "The chocolate delivery was delicious, thank you senior!", author: "高一的小明" },
-                { content: "金勾盃大家加油！期待神秘嘉賓！", content_en: "Good luck everyone on Jingle Bells! Can't wait for the mystery guest!", author: "路過的同學" },
-                { content: "學生會辛苦了，活動辦得很棒！", content_en: "Student Council, thank you for your hard work! Great event!", author: "高三老屁股" }
+                { id: 's1', content: "傳情的巧克力真的很好吃，謝謝學姊！", content_en: "The chocolate delivery was delicious, thank you senior!", author: "高一的小明" },
+                { id: 's2', content: "金勾盃大家加油！期待神秘嘉賓！", content_en: "Good luck everyone on Jingle Bells! Can't wait for the mystery guest!", author: "路過的同學" },
+                { id: 's3', content: "學生會辛苦了，活動辦得很棒！", content_en: "Student Council, thank you for your hard work! Great event!", author: "高三老屁股" }
             ],
             events: [
-                { date: '01/01', title_zh: '元旦', title_en: "New Year's Day", location_zh: '全校', location_en: 'Campus', time: '全天', type: 'Holiday' },
-                { date: '01/09', title_zh: '第八節輔導課結束', title_en: '8th Period Supplementary Classes End', location_zh: '各班教室', location_en: 'Classrooms', time: '17:00', type: 'Academic' },
-                { date: '01/16', title_zh: '高一高二職三期末考 (1/16, 19-20)', title_en: 'Final Exams', location_zh: '各班教室', location_en: 'Classrooms', time: '08:00', type: 'Academic' },
-                { date: '01/17', title_zh: '大學學測 (1/17-19)', title_en: 'GSAT', location_zh: '考場', location_en: 'Exam Centers', time: '08:00', type: 'Academic' },
-                { date: '01/20', title_zh: '休業式、公告自主學習名單', title_en: 'Closing Ceremony', location_zh: '各班教室', location_en: 'Classrooms', time: '全天', type: 'Academic' },
-                { date: '01/21', title_zh: '提前上 114-2 課程 (1/21-23)', title_en: 'Early Start of 114-2', location_zh: '各班教室', location_en: 'Classrooms', time: '08:00', type: 'Academic' }
+                { id: 'e1', date: '01/01', title_zh: '元旦', title_en: "New Year's Day", location_zh: '全校', location_en: 'Campus', time: '全天', type: 'Holiday' },
+                { id: 'e2', date: '01/09', title_zh: '第八節輔導課結束', title_en: '8th Period Supplementary Classes End', location_zh: '各班教室', location_en: 'Classrooms', time: '17:00', type: 'Academic' },
+                { id: 'e3', date: '01/16', title_zh: '高一高二職三期末考 (1/16, 19-20)', title_en: 'Final Exams', location_zh: '各班教室', location_en: 'Classrooms', time: '08:00', type: 'Academic' },
+                { id: 'e4', date: '01/17', title_zh: '大學學測 (1/17-19)', title_en: 'GSAT', location_zh: '考場', location_en: 'Exam Centers', time: '08:00', type: 'Academic' },
+                { id: 'e5', date: '01/20', title_zh: '休業式、公告自主學習名單', title_en: 'Closing Ceremony', location_zh: '各班教室', location_en: 'Classrooms', time: '全天', type: 'Academic' },
+                { id: 'e6', date: '01/21', title_zh: '提前上 114-2 課程 (1/21-23)', title_en: 'Early Start of 114-2', location_zh: '各班教室', location_en: 'Classrooms', time: '08:00', type: 'Academic' }
             ],
             finance: [
                 { item_zh: '聖誕活動佈置費', item_en: 'Xmas Decoration', amount: -5000, date: '2025-12-15', type: 'Out' },
@@ -282,12 +286,13 @@
             ]
         };
 
+        // 資料容器
         let APP_DATA = JSON.parse(JSON.stringify(STATIC_DATA));
 
         const I18N = {
             zh: {
                 home: '首頁', events: '近期活動', mailboxes: '信箱專區', clubs: '社團專區', downloads: '資料下載',
-                contact: '聯絡我們', org: '組織架構', finance: '財務明細', meetings: '會議紀錄', admin: '幹部登入',
+                contact: '聯絡我們', org: '組織架構', finance: '財務明細', meetings: '會議紀錄', admin: '後台管理',
                 marquee: '📢 歡迎來到北港高中學生會官方網站！最新活動：金勾盃歌唱比賽決賽將於 12/25 舉行！', 
                 heroTitle: '北港高中學生會互動網站',
                 heroSubtitle: '你的聲音，我們的行動。共創更美好的校園生活。',
@@ -301,11 +306,14 @@
                 role_pres: '會長', role_vp: '副會長', role_admin: '行政組', role_act: '活動組', role_mobile: '機動組',
                 role_pr: '公關組', role_ga: '總務組', role_art: '美宣組', role_chief: '組長', role_deputy: '副組長',
                 download_btn: '下載檔案', write_confession: '我要告白',
-                filter_all: '全部', filter_academic: '教務', filter_holiday: '假日', filter_event: '活動'
+                filter_all: '全部', filter_academic: '教務', filter_holiday: '假日', filter_event: '活動',
+                login_title: '學生會幹部登入', login_btn: '登入', login_email: '電子郵件', login_pwd: '密碼',
+                admin_dashboard: '管理儀表板', admin_news: '公告管理', admin_events: '活動管理', admin_confess: '告白審核', admin_logout: '登出',
+                add_btn: '新增', delete_btn: '刪除', no_data: '暫無資料'
             },
             en: {
                 home: 'Home', events: 'Events', mailboxes: 'Mailboxes', clubs: 'Clubs', downloads: 'Downloads',
-                contact: 'Contact Us', org: 'Organization', finance: 'Finance', meetings: 'Minutes', admin: 'Staff Login',
+                contact: 'Contact Us', org: 'Organization', finance: 'Finance', meetings: 'Minutes', admin: 'Admin Panel',
                 marquee: '📢 Welcome to PKSH Student Council Website! Upcoming: Jingle Bells Finals on Dec 25!', 
                 heroTitle: 'PKSH Student Council',
                 heroSubtitle: 'Your Voice, Our Action. Creating a better campus life together.',
@@ -319,7 +327,10 @@
                 role_pres: 'President', role_vp: 'Vice President', role_admin: 'Admin Dept', role_act: 'Activity Dept', role_mobile: 'Logistics Dept',
                 role_pr: 'Public Relations', role_ga: 'General Affairs', role_art: 'Art & Design', role_chief: 'Chief', role_deputy: 'Deputy',
                 download_btn: 'Download', write_confession: 'Write Confession',
-                filter_all: 'All', filter_academic: 'Academic', filter_holiday: 'Holiday', filter_event: 'Event'
+                filter_all: 'All', filter_academic: 'Academic', filter_holiday: 'Holiday', filter_event: 'Event',
+                login_title: 'Staff Login', login_btn: 'Login', login_email: 'Email', login_pwd: 'Password',
+                admin_dashboard: 'Dashboard', admin_news: 'Manage News', admin_events: 'Manage Events', admin_confess: 'Confessions', admin_logout: 'Logout',
+                add_btn: 'Add', delete_btn: 'Delete', no_data: 'No Data'
             }
         };
 
@@ -329,35 +340,163 @@
             darkMode: false,
             confessionTimer: null,
             confessionIndex: 0,
-            eventFilter: 'All' // 新增：活動篩選狀態
+            eventFilter: 'All',
+            user: null, // User Auth State
+            adminTab: 'news' // news, events, confessions
         };
 
         const t = (key) => I18N[APP_STATE.lang][key] || key;
         const isEn = () => APP_STATE.lang === 'en';
 
-        // --- Firebase ---
+        // --- Firebase Data Handling ---
+        
         async function loadDataFromFirebase() {
             if (!db) return;
             try {
-                const q = query(collection(db, "confessions"), orderBy("timestamp", "desc"), limit(10));
-                const querySnapshot = await getDocs(q);
+                // 1. Load Confessions
+                const qConfess = query(collection(db, "confessions"), orderBy("timestamp", "desc"), limit(20));
+                const snapConfess = await getDocs(qConfess);
                 const fetchedConfessions = [];
-                querySnapshot.forEach((doc) => {
+                snapConfess.forEach((doc) => {
                     const d = doc.data();
                     fetchedConfessions.push({
+                        id: doc.id,
                         content: d.content,
                         content_en: d.content_en || d.content,
                         author: d.author
                     });
                 });
+                // 合併資料（優先顯示 Firebase 資料）
                 if (fetchedConfessions.length > 0) {
                     APP_DATA.confessionWall = fetchedConfessions;
-                    if(APP_STATE.view === 'home') renderHome(); // Refresh if on home
                 }
+
+                // 2. Load Announcements (News)
+                const qNews = query(collection(db, "announcements"), orderBy("date", "desc"));
+                const snapNews = await getDocs(qNews);
+                const fetchedNews = [];
+                snapNews.forEach(doc => {
+                     const d = doc.data();
+                     fetchedNews.push({ id: doc.id, ...d });
+                });
+                if(fetchedNews.length > 0) {
+                    // 將 Firebase 資料加到靜態資料前面
+                    APP_DATA.announcements = [...fetchedNews, ...STATIC_DATA.announcements];
+                }
+
+                // 3. Load Events
+                const qEvents = query(collection(db, "events"), orderBy("date", "asc"));
+                const snapEvents = await getDocs(qEvents);
+                const fetchedEvents = [];
+                snapEvents.forEach(doc => {
+                    const d = doc.data();
+                    fetchedEvents.push({ id: doc.id, ...d });
+                });
+                if(fetchedEvents.length > 0) {
+                    APP_DATA.events = [...fetchedEvents, ...STATIC_DATA.events];
+                    // 重新排序日期
+                    APP_DATA.events.sort((a,b) => a.date.localeCompare(b.date));
+                }
+
+                if(APP_STATE.view === 'home' || APP_STATE.view === 'events') render(); 
             } catch (error) {
                 console.log("Firebase 讀取失敗:", error);
             }
         }
+
+        // --- Auth & Admin Logic ---
+
+        if (auth) {
+            onAuthStateChanged(auth, (user) => {
+                APP_STATE.user = user;
+                if (APP_STATE.view === 'admin') render(); // Re-render admin view on auth change
+            });
+        }
+
+        window.handleLogin = async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('admin-email').value;
+            const pwd = document.getElementById('admin-pwd').value;
+            try {
+                await signInWithEmailAndPassword(auth, email, pwd);
+                Swal.fire({ icon: 'success', title: '登入成功', timer: 1500, showConfirmButton: false });
+            } catch (error) {
+                Swal.fire('登入失敗', '請檢查帳號密碼', 'error');
+            }
+        };
+
+        window.handleLogout = async () => {
+            try {
+                await signOut(auth);
+                Swal.fire({ icon: 'success', title: '已登出', timer: 1000, showConfirmButton: false });
+            } catch (error) {
+                console.error(error);
+            }
+        };
+
+        // --- Admin CRUD Operations ---
+
+        window.switchAdminTab = (tab) => {
+            APP_STATE.adminTab = tab;
+            render();
+        }
+
+        window.addNews = async () => {
+            const title = document.getElementById('news-title').value;
+            const content = document.getElementById('news-content').value;
+            const date = document.getElementById('news-date').value;
+            if(!title || !date) return Swal.fire('欄位未填', '請填寫標題與日期', 'warning');
+            
+            try {
+                await addDoc(collection(db, "announcements"), {
+                    title_zh: title, title_en: title, 
+                    content_zh: content, content_en: content,
+                    tag_zh: '公告', tag_en: 'Notice',
+                    date: date, timestamp: serverTimestamp()
+                });
+                Swal.fire('新增成功', '', 'success');
+                await loadDataFromFirebase();
+            } catch(e) { Swal.fire('錯誤', e.message, 'error'); }
+        }
+
+        window.addEvent = async () => {
+            const title = document.getElementById('event-title').value;
+            const date = document.getElementById('event-date').value; // YYYY-MM-DD
+            const time = document.getElementById('event-time').value;
+            const loc = document.getElementById('event-loc').value;
+            const type = document.getElementById('event-type').value;
+
+            if(!title || !date) return Swal.fire('欄位未填', '請填寫完整資訊', 'warning');
+            
+            // Format date to MM/DD for display consistency with static data, or keep YYYY-MM-DD
+            // Here we store standard string
+            try {
+                await addDoc(collection(db, "events"), {
+                    title_zh: title, title_en: title,
+                    date: date.replace('-','/').substring(5), // stored as MM/DD roughly or just string
+                    fullDate: date, // useful for sorting
+                    time: time, location_zh: loc, location_en: loc,
+                    type: type, timestamp: serverTimestamp()
+                });
+                Swal.fire('新增成功', '', 'success');
+                await loadDataFromFirebase();
+            } catch(e) { Swal.fire('錯誤', e.message, 'error'); }
+        }
+
+        window.deleteItem = async (collectionName, id) => {
+            if(!db) return;
+            const result = await Swal.fire({ title: '確定刪除？', icon: 'warning', showCancelButton: true });
+            if(result.isConfirmed) {
+                try {
+                    await deleteDoc(doc(db, collectionName, id));
+                    Swal.fire('已刪除', '', 'success');
+                    await loadDataFromFirebase();
+                    render(); // Refresh admin UI
+                } catch(e) { Swal.fire('刪除失敗', '無法刪除靜態資料或權限不足', 'error'); }
+            }
+        }
+
+        // --- Public Operations ---
 
         window.submitConfession = async () => {
             const content = document.getElementById('confession-input-content').value;
@@ -539,7 +678,6 @@
             `;
         }
 
-        // --- 改進：加入類別篩選器 ---
         function renderEvents() {
             const filter = APP_STATE.eventFilter;
             const filteredEvents = filter === 'All' 
@@ -717,8 +855,128 @@
             return `<h1 class="text-3xl font-bold mb-6 text-theme text-center">${t('meetingTitle')}</h1><div class="space-y-4 max-w-3xl mx-auto">${list}</div>`;
         }
 
+        // --- NEW: Admin System ---
         function renderAdmin() {
-             return `<div class="max-w-md mx-auto bg-white dark:bg-gray-800 p-8 rounded-xl shadow text-center"><h1 class="text-2xl font-bold mb-4 dark:text-white">${t('admin')}</h1><input type="password" placeholder="Password" class="w-full p-2 border mb-4 rounded dark:bg-gray-700 dark:text-white"><button class="w-full bg-theme text-white py-2 rounded hover:bg-theme-dark transition">Login</button></div>`;
+            if (!APP_STATE.user) {
+                // Login Form
+                return `
+                    <div class="max-w-md mx-auto bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg border-t-8 border-theme mt-10">
+                        <h1 class="text-2xl font-bold mb-6 dark:text-white text-center">${t('login_title')}</h1>
+                        <form onsubmit="handleLogin(event)" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-bold mb-1 dark:text-gray-300">${t('login_email')}</label>
+                                <input type="email" id="admin-email" required class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:border-theme">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold mb-1 dark:text-gray-300">${t('login_pwd')}</label>
+                                <input type="password" id="admin-pwd" required class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:border-theme">
+                            </div>
+                            <button type="submit" class="w-full bg-theme text-white py-2 rounded hover:bg-theme-dark transition font-bold">${t('login_btn')}</button>
+                        </form>
+                    </div>
+                `;
+            } else {
+                // Dashboard
+                const tab = APP_STATE.adminTab;
+                let contentHtml = '';
+
+                // Tab Content: News
+                if (tab === 'news') {
+                    const list = APP_DATA.announcements.filter(a => a.id && !a.id.startsWith('static_')).map(a => `
+                         <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-700 p-3 rounded mb-2">
+                            <div><p class="font-bold dark:text-white">${a.title_zh}</p><span class="text-xs text-gray-500">${a.date}</span></div>
+                            <button onclick="deleteItem('announcements', '${a.id}')" class="text-red-500 text-sm hover:underline">${t('delete_btn')}</button>
+                         </div>
+                    `).join('');
+                    contentHtml = `
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
+                                <h3 class="font-bold mb-2 dark:text-white">新增公告</h3>
+                                <input id="news-title" class="w-full mb-2 p-2 rounded dark:bg-gray-800 dark:text-white" placeholder="標題">
+                                <input id="news-date" type="date" class="w-full mb-2 p-2 rounded dark:bg-gray-800 dark:text-white">
+                                <textarea id="news-content" class="w-full mb-2 p-2 rounded dark:bg-gray-800 dark:text-white" placeholder="內容 (支援 HTML)"></textarea>
+                                <button onclick="addNews()" class="bg-theme text-white px-4 py-2 rounded w-full">${t('add_btn')}</button>
+                            </div>
+                            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow h-[400px] overflow-y-auto">
+                                <h3 class="font-bold mb-2 dark:text-white">管理公告 (Firebase)</h3>
+                                ${list || `<p class="text-gray-400 text-sm">${t('no_data')}</p>`}
+                            </div>
+                        </div>
+                    `;
+                }
+                // Tab Content: Events
+                else if (tab === 'events') {
+                     const list = APP_DATA.events.filter(e => e.id && !e.id.startsWith('e')).map(e => `
+                         <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-700 p-3 rounded mb-2">
+                            <div><p class="font-bold dark:text-white">${e.title_zh}</p><span class="text-xs text-gray-500">${e.date} | ${e.type}</span></div>
+                            <button onclick="deleteItem('events', '${e.id}')" class="text-red-500 text-sm hover:underline">${t('delete_btn')}</button>
+                         </div>
+                    `).join('');
+                    contentHtml = `
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                             <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
+                                <h3 class="font-bold mb-2 dark:text-white">新增活動</h3>
+                                <input id="event-title" class="w-full mb-2 p-2 rounded dark:bg-gray-800 dark:text-white" placeholder="活動名稱">
+                                <div class="flex gap-2 mb-2">
+                                    <input id="event-date" type="date" class="w-1/2 p-2 rounded dark:bg-gray-800 dark:text-white">
+                                    <input id="event-time" class="w-1/2 p-2 rounded dark:bg-gray-800 dark:text-white" placeholder="時間 (e.g. 08:00)">
+                                </div>
+                                <input id="event-loc" class="w-full mb-2 p-2 rounded dark:bg-gray-800 dark:text-white" placeholder="地點">
+                                <select id="event-type" class="w-full mb-2 p-2 rounded dark:bg-gray-800 dark:text-white">
+                                    <option value="Activity">Activity (活動)</option>
+                                    <option value="Academic">Academic (教務)</option>
+                                    <option value="Holiday">Holiday (假日)</option>
+                                </select>
+                                <button onclick="addEvent()" class="bg-theme text-white px-4 py-2 rounded w-full">${t('add_btn')}</button>
+                            </div>
+                            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow h-[400px] overflow-y-auto">
+                                <h3 class="font-bold mb-2 dark:text-white">管理活動 (Firebase)</h3>
+                                ${list || `<p class="text-gray-400 text-sm">${t('no_data')}</p>`}
+                            </div>
+                        </div>
+                    `;
+                }
+                // Tab Content: Confessions
+                else if (tab === 'confessions') {
+                     const list = APP_DATA.confessionWall.filter(c => c.id && !c.id.startsWith('s')).map(c => `
+                         <div class="border-b dark:border-gray-700 p-3 flex justify-between items-start">
+                            <div>
+                                <p class="text-sm dark:text-white font-bold">${c.content}</p>
+                                <p class="text-xs text-gray-500 mt-1">By: ${c.author}</p>
+                            </div>
+                            <button onclick="deleteItem('confessions', '${c.id}')" class="text-red-500 text-xs border border-red-200 p-1 rounded hover:bg-red-50">${t('delete_btn')}</button>
+                         </div>
+                    `).join('');
+                    contentHtml = `
+                        <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+                            <h3 class="font-bold mb-4 dark:text-white">最新告白管理</h3>
+                            <div class="max-h-[500px] overflow-y-auto">
+                             ${list || `<p class="text-center py-10 text-gray-500">${t('no_data')}</p>`}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="bg-white dark:bg-gray-800 min-h-[600px] rounded-xl shadow-lg flex flex-col md:flex-row overflow-hidden border border-gray-100 dark:border-gray-700">
+                        <div class="w-full md:w-64 bg-gray-50 dark:bg-gray-900 p-4 flex flex-col gap-2 border-r dark:border-gray-700">
+                            <div class="mb-6 px-2">
+                                <h2 class="text-xl font-bold text-theme">${t('admin_dashboard')}</h2>
+                                <p class="text-xs text-gray-500 truncate">${APP_STATE.user.email}</p>
+                            </div>
+                            <button onclick="switchAdminTab('news')" class="text-left px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-800 ${tab==='news'?'bg-white dark:bg-gray-800 shadow font-bold text-theme':''}">${t('admin_news')}</button>
+                            <button onclick="switchAdminTab('events')" class="text-left px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-800 ${tab==='events'?'bg-white dark:bg-gray-800 shadow font-bold text-theme':''}">${t('admin_events')}</button>
+                            <button onclick="switchAdminTab('confessions')" class="text-left px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-800 ${tab==='confessions'?'bg-white dark:bg-gray-800 shadow font-bold text-theme':''}">${t('admin_confess')}</button>
+                            <div class="mt-auto">
+                                <button onclick="handleLogout()" class="w-full text-left px-4 py-2 rounded text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20">${t('admin_logout')}</button>
+                            </div>
+                        </div>
+                        <div class="flex-grow p-6 bg-gray-100 dark:bg-gray-950/50">
+                            ${contentHtml}
+                        </div>
+                    </div>
+                `;
+            }
         }
 
         // --- Core Render ---
@@ -742,7 +1000,7 @@
             document.querySelectorAll('.nav-btn').forEach(el => {
                  if(I18N[APP_STATE.lang][el.dataset.key]) el.innerText = I18N[APP_STATE.lang][el.dataset.key];
             });
-            // Update mobile menu buttons too
+            // Update mobile menu buttons
             document.querySelectorAll('#mobile-menu button').forEach(el => {
                 if(el.dataset.key && I18N[APP_STATE.lang][el.dataset.key]) el.innerText = I18N[APP_STATE.lang][el.dataset.key];
             });
