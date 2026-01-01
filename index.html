@@ -71,22 +71,22 @@
         ::-webkit-scrollbar-thumb { background: #00c8b7; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #00a092; }
 
-        /* [重要修復] 公告連結樣式：排除按鈕類的連結，只對普通文字連結加底線 */
-        .news-content a:not(.btn-link) {
+        /* [重要] 公告連結樣式：確保連結有顏色、底線、且層級最高可點擊 */
+        .news-content a {
             color: #00c8b7 !important; 
             text-decoration: underline !important;
             font-weight: bold;
             cursor: pointer !important;
             position: relative;
-            z-index: 50;
-            pointer-events: auto !important;
+            z-index: 50; /* 提高層級 */
+            pointer-events: auto !important; /* 強制接收點擊 */
         }
-        .news-content a:not(.btn-link):hover {
+        .news-content a:hover {
             color: #008c80 !important;
         }
-        /* 確保按鈕類連結沒有底線 */
-        .news-content a.btn-link {
+        .news-content a.block {
             text-decoration: none !important;
+            color: inherit !important;
         }
     </style>
 </head>
@@ -308,44 +308,52 @@
                 { 
                     roleKey: 'role_act', 
                     icon: '🎉', 
-                    chief: '鄭雨涵', 
+                    chief_zh: '鄭雨涵', 
+                    chief_en: 'CHENG, YU-HAN', 
                     desc_zh: '負責策劃及推行本會所舉辦之各類活動。', 
                     desc_en: 'Responsible for planning and executing various activities organized by the council.' 
                 },
                 { 
                     roleKey: 'role_art', 
                     icon: '🎨', 
-                    chief: '朱守晴', 
-                    deputy: '黃瓊美', 
+                    chief_zh: '朱守晴', 
+                    chief_en: 'CHU, SHOU-CHING', 
+                    deputy_zh: '黃瓊美', 
+                    deputy_en: 'HUANG, CHIUNG-MEI', 
                     desc_zh: '負責本會學藝活動、海報、壁報設計。', 
                     desc_en: 'Responsible for art activities, posters, and bulletin board designs.' 
                 },
                 { 
                     roleKey: 'role_admin', 
                     icon: '📝', 
-                    chief: '蔡秉宏', 
-                    deputy: '顏子䒟', 
+                    chief_zh: '蔡秉宏', 
+                    chief_en: 'TSAI, PING-HUNG', 
+                    deputy_zh: '顏子䒟', 
+                    deputy_en: 'YEN, TZU-TAN', 
                     desc_zh: '負責本會開會通告、會議記錄。', 
                     desc_en: 'Responsible for handling meeting notices and minutes.' 
                 },
                 { 
                     roleKey: 'role_ga', 
                     icon: '💰', 
-                    chief: '趙芝翊', 
+                    chief_zh: '趙芝翊', 
+                    chief_en: 'CHAO, CHIH-YI', 
                     desc_zh: '負責本會經費收支，財產保管。', 
                     desc_en: 'Responsible for managing council finances and property custody.' 
                 },
                 { 
                     roleKey: 'role_pr', 
                     icon: '📢', 
-                    chief: '許雅琳', 
+                    chief_zh: '許雅琳', 
+                    chief_en: 'HSU, YA-LIN', 
                     desc_zh: '負責本會會議之聯絡及舉辦活動之聯繫。', 
                     desc_en: 'Responsible for communication regarding meetings and event coordination.' 
                 },
                 { 
                     roleKey: 'role_mobile', 
                     icon: '🛠️', 
-                    chief: '劉乙葭', 
+                    chief_zh: '劉乙葭', 
+                    chief_en: 'LIU, YI-CHIA', 
                     desc_zh: '負責本會舉辦之場地佈置。', 
                     desc_en: 'Responsible for venue layout and setup for council events.' 
                 }
@@ -1152,7 +1160,7 @@
                             <span class="text-xs text-gray-400 block">${t('role_chief')}</span>
                             <span class="font-bold text-lg dark:text-white uppercase">${val(d, 'chief')}</span>
                         </div>
-                        ${d.deputy ? `<div class="text-center w-1/2 border-l dark:border-gray-700"><span class="text-xs text-gray-400 block">${t('role_deputy')}</span><span class="font-bold text-lg dark:text-white uppercase">${val(d, 'deputy')}</span></div>` : ''}
+                        ${d.deputy_zh ? `<div class="text-center w-1/2 border-l dark:border-gray-700"><span class="text-xs text-gray-400 block">${t('role_deputy')}</span><span class="font-bold text-lg dark:text-white uppercase">${val(d, 'deputy')}</span></div>` : ''}
                     </div>
                     <p class="text-sm text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg leading-relaxed text-justify">${val(d, 'desc')}</p>
                 </div>
