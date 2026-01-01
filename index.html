@@ -71,17 +71,23 @@
         ::-webkit-scrollbar-thumb { background: #00c8b7; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #00a092; }
 
-        /* [修復] 公告連結樣式：確保連結有顏色且可點擊 */
+        /* [修復] 公告連結樣式：確保連結有顏色、底線、且層級最高可點擊 */
         .news-content a {
-            color: #00c8b7; 
-            text-decoration: underline;
+            color: #00c8b7 !important; 
+            text-decoration: underline !important;
             font-weight: bold;
-            cursor: pointer;
+            cursor: pointer !important;
             position: relative;
-            z-index: 10;
+            z-index: 50; /* 提高層級 */
+            pointer-events: auto !important; /* 強制接收點擊 */
         }
         .news-content a:hover {
-            color: #008c80;
+            color: #008c80 !important;
+        }
+        /* 如果是用按鈕形式的連結 (如靜態範例) */
+        .news-content a.block {
+            text-decoration: none !important;
+            color: inherit !important;
         }
     </style>
 </head>
@@ -253,8 +259,9 @@
                     title_en: 'Jingle Bells Singing Contest Schedule', 
                     tag_zh: '活動', tag_en: 'Event', 
                     date: '2025-12-24',
-                    content_zh: `<a href="#" class="block w-full text-center bg-red-50 text-red-600 border border-red-200 rounded-lg py-3 hover:bg-red-100 transition font-bold"><i data-lucide="file-down" class="inline-block mr-2"></i>點此下載決賽時程表 (PDF)</a>`,
-                    content_en: `<a href="#" class="block w-full text-center bg-red-50 text-red-600 border border-red-200 rounded-lg py-3 hover:bg-red-100 transition font-bold"><i data-lucide="file-down" class="inline-block mr-2"></i>Download Schedule (PDF)</a>`
+                    // [MODIFIED] Added 'onclick' alert for testing, and removed href="#"
+                    content_zh: `<a href="javascript:void(0)" onclick="Swal.fire('連結測試', '連結功能正常運作中！', 'success')" class="block w-full text-center bg-red-50 text-red-600 border border-red-200 rounded-lg py-3 hover:bg-red-100 transition font-bold"><i data-lucide="file-down" class="inline-block mr-2"></i>點此下載決賽時程表 (PDF)</a>`,
+                    content_en: `<a href="javascript:void(0)" onclick="Swal.fire('Link Test', 'Link is working!', 'success')" class="block w-full text-center bg-red-50 text-red-600 border border-red-200 rounded-lg py-3 hover:bg-red-100 transition font-bold"><i data-lucide="file-down" class="inline-block mr-2"></i>Download Schedule (PDF)</a>`
                 }
             ],
             confessionWall: [
@@ -385,6 +392,20 @@
                 }
             } catch (e) { console.error("Date parse error", e); }
             return { month, day };
+        }
+
+        // [NEW] Helper: Auto-Linkify text content
+        // This converts raw URLs in text to clickable links automatically
+        function formatContent(text) {
+            if (!text) return '';
+            // If text contains HTML tags (like <a> or <div>), assume it's already formatted
+            if (/<[a-z][\s\S]*>/i.test(text)) return text;
+            
+            // Otherwise, regex replace URLs with <a> tags
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            return text.replace(urlRegex, (url) => {
+                return `<a href="${url}" target="_blank" class="text-theme underline font-bold break-all hover:text-theme-dark transition">${url}</a>`;
+            });
         }
 
         // --- Firebase Data Handling ---
@@ -894,7 +915,7 @@
                         <span class="text-xs text-gray-400">${item.date}</span>
                     </div>
                     <h3 class="text-lg font-bold mt-1 mb-3 dark:text-white">${isEn() ? item.title_en : item.title_zh}</h3>
-                    ${item.content_zh ? `<div class="mt-2 text-gray-600 dark:text-gray-300 overflow-x-auto news-content">${isEn() ? item.content_en : item.content_zh}</div>` : ''}
+                    ${item.content_zh ? `<div class="mt-2 text-gray-600 dark:text-gray-300 overflow-x-auto news-content">${formatContent(isEn() ? item.content_en : item.content_zh)}</div>` : ''}
                 </div>
             `).join('');
             return `
