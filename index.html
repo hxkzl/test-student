@@ -71,22 +71,22 @@
         ::-webkit-scrollbar-thumb { background: #00c8b7; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #00a092; }
 
-        /* [重要] 公告連結樣式：確保連結有顏色、底線、且層級最高可點擊 */
-        .news-content a {
+        /* [重要修復] 公告連結樣式：排除按鈕類的連結，只對普通文字連結加底線 */
+        .news-content a:not(.btn-link) {
             color: #00c8b7 !important; 
             text-decoration: underline !important;
             font-weight: bold;
             cursor: pointer !important;
             position: relative;
-            z-index: 50; /* 提高層級 */
-            pointer-events: auto !important; /* 強制接收點擊 */
+            z-index: 50;
+            pointer-events: auto !important;
         }
-        .news-content a:hover {
+        .news-content a:not(.btn-link):hover {
             color: #008c80 !important;
         }
-        .news-content a.block {
+        /* 確保按鈕類連結沒有底線 */
+        .news-content a.btn-link {
             text-decoration: none !important;
-            color: inherit !important;
         }
     </style>
 </head>
@@ -258,8 +258,8 @@
                     title_en: 'Jingle Bells Singing Contest Schedule', 
                     tag_zh: '活動', tag_en: 'Event', 
                     date: '2025-12-24',
-                    content_zh: `<a href="javascript:void(0)" onclick="Swal.fire('連結測試', '連結功能正常運作中！', 'success')" class="block w-full text-center bg-red-50 text-red-600 border border-red-200 rounded-lg py-3 hover:bg-red-100 transition font-bold"><i data-lucide="file-down" class="inline-block mr-2"></i>點此下載決賽時程表 (PDF)</a>`,
-                    content_en: `<a href="javascript:void(0)" onclick="Swal.fire('Link Test', 'Link is working!', 'success')" class="block w-full text-center bg-red-50 text-red-600 border border-red-200 rounded-lg py-3 hover:bg-red-100 transition font-bold"><i data-lucide="file-down" class="inline-block mr-2"></i>Download Schedule (PDF)</a>`
+                    content_zh: 'https://www.pksh.ylc.edu.tw/ischool/news/attached/25990/PDF_FILE_LINK.pdf', 
+                    content_en: 'https://www.pksh.ylc.edu.tw/ischool/news/attached/25990/PDF_FILE_LINK.pdf'
                 }
             ],
             confessionWall: [
@@ -455,17 +455,43 @@
             return { month, day };
         }
 
-        // [NEW] Helper: Auto-Linkify text content
-        // This converts raw URLs in text to clickable links automatically
+        // [重要更新] 智慧網址轉換器：自動偵測 YouTube 和 PDF
         function formatContent(text) {
             if (!text) return '';
-            // If text contains HTML tags (like <a> or <div>), assume it's already formatted
-            if (/<[a-z][\s\S]*>/i.test(text)) return text;
             
-            // Otherwise, regex replace URLs with <a> tags
+            // 如果是純 HTML 標籤（如之前的範例），直接回傳
+            if (/<[a-z][\s\S]*>/i.test(text) && !text.startsWith('http')) return text;
+            
+            // 正規表達式抓取網址
             const urlRegex = /(https?:\/\/[^\s]+)/g;
+            
             return text.replace(urlRegex, (url) => {
-                return `<a href="${url}" target="_blank" class="text-theme underline font-bold break-all hover:text-theme-dark transition">${url}</a>`;
+                // 1. YouTube 偵測 (轉為嵌入影片)
+                const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
+                if (ytMatch && ytMatch[1]) {
+                    return `<div class="my-4 w-full aspect-video"><iframe src="https://www.youtube.com/embed/${ytMatch[1]}" class="w-full h-full rounded-lg shadow-lg" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
+                }
+                
+                // 2. PDF 偵測 (轉為紅色按鈕)
+                if (url.toLowerCase().endsWith('.pdf')) {
+                    // 嘗試從網址抓檔名，解碼
+                    let filename = '點此下載 PDF 文件';
+                    try {
+                        const urlObj = new URL(url);
+                        const path = urlObj.pathname.split('/').pop();
+                        if(path) filename = decodeURIComponent(path);
+                    } catch(e){}
+                    
+                    return `<a href="${url}" target="_blank" class="btn-link block mt-2 w-full text-center bg-red-50 text-red-600 border border-red-200 rounded-lg py-3 hover:bg-red-100 transition font-bold"><i data-lucide="file-down" class="inline-block mr-2"></i>${filename}</a>`;
+                }
+                
+                // 3. 圖片偵測
+                if (/\.(jpeg|jpg|gif|png)$/i.test(url)) {
+                     return `<img src="${url}" class="mt-2 rounded-lg shadow-md max-h-64 mx-auto" alt="Image">`;
+                }
+
+                // 4. 一般連結 (隱藏原始網址，顯示文字)
+                return `<a href="${url}" target="_blank" class="text-theme underline font-bold hover:text-theme-dark transition">🔗 開啟連結</a>`;
             });
         }
 
