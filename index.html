@@ -71,7 +71,7 @@
         ::-webkit-scrollbar-thumb { background: #00c8b7; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #00a092; }
 
-        /* [修復] 公告連結樣式：確保連結有顏色、底線、且層級最高可點擊 */
+        /* [重要] 公告連結樣式：確保連結有顏色、底線、且層級最高可點擊 */
         .news-content a {
             color: #00c8b7 !important; 
             text-decoration: underline !important;
@@ -84,7 +84,6 @@
         .news-content a:hover {
             color: #008c80 !important;
         }
-        /* 如果是用按鈕形式的連結 (如靜態範例) */
         .news-content a.block {
             text-decoration: none !important;
             color: inherit !important;
@@ -98,7 +97,7 @@
     </button>
 
     <div class="bg-gray-800 text-white dark:bg-black text-sm py-2 px-4 marquee-container min-h-[36px]">
-        <div class="marquee-content" id="marquee-text">載入中...</div>
+        <div class="marquee-content" id="marquee-text">Loading...</div>
     </div>
 
     <header class="sticky top-0 z-30 bg-white/95 backdrop-blur shadow-sm dark:bg-gray-800/95 dark:border-b dark:border-gray-700">
@@ -259,7 +258,6 @@
                     title_en: 'Jingle Bells Singing Contest Schedule', 
                     tag_zh: '活動', tag_en: 'Event', 
                     date: '2025-12-24',
-                    // [MODIFIED] Added 'onclick' alert for testing, and removed href="#"
                     content_zh: `<a href="javascript:void(0)" onclick="Swal.fire('連結測試', '連結功能正常運作中！', 'success')" class="block w-full text-center bg-red-50 text-red-600 border border-red-200 rounded-lg py-3 hover:bg-red-100 transition font-bold"><i data-lucide="file-down" class="inline-block mr-2"></i>點此下載決賽時程表 (PDF)</a>`,
                     content_en: `<a href="javascript:void(0)" onclick="Swal.fire('Link Test', 'Link is working!', 'success')" class="block w-full text-center bg-red-50 text-red-600 border border-red-200 rounded-lg py-3 hover:bg-red-100 transition font-bold"><i data-lucide="file-down" class="inline-block mr-2"></i>Download Schedule (PDF)</a>`
                 }
@@ -425,6 +423,15 @@
         const t = (key) => I18N[APP_STATE.lang][key] || key;
         const isEn = () => APP_STATE.lang === 'en';
 
+        // [NEW] 智慧欄位選擇器：自動判斷回傳中文或英文資料
+        const val = (data, field) => {
+            if (!data) return '';
+            // 如果是英文模式，嘗試找 _en 欄位，沒有的話找 _zh，再沒有找原欄位
+            if (isEn()) return data[field + '_en'] || data[field + '_zh'] || data[field] || '';
+            // 如果是中文模式，嘗試找 _zh 欄位，沒有的話找原欄位
+            return data[field + '_zh'] || data[field] || '';
+        };
+
         // --- Helper: Robust Date Formatting ---
         function formatDateHelper(dateStr) {
             let month = '??';
@@ -578,15 +585,48 @@
             render();
         }
 
+        // [NEW] AI Auto-Translate Function
+        window.autoTranslate = async (sourceId, targetId) => {
+            const sourceText = document.getElementById(sourceId).value;
+            const targetInput = document.getElementById(targetId);
+            
+            if (!sourceText) return Swal.fire('請先輸入中文', '', 'warning');
+
+            targetInput.value = '翻譯中...';
+            targetInput.disabled = true;
+
+            try {
+                // Using MyMemory Free API
+                const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(sourceText)}&langpair=zh-TW|en-US`);
+                const data = await res.json();
+                
+                if (data.responseData && data.responseData.translatedText) {
+                    targetInput.value = data.responseData.translatedText;
+                } else {
+                    targetInput.value = '';
+                    Swal.fire('翻譯失敗', '請手動輸入', 'error');
+                }
+            } catch (e) {
+                console.error(e);
+                targetInput.value = '';
+                Swal.fire('連線錯誤', '請稍後再試', 'error');
+            } finally {
+                targetInput.disabled = false;
+            }
+        };
+
         window.addNews = async () => {
-            const title = document.getElementById('news-title').value;
-            const content = document.getElementById('news-content').value;
+            const title_zh = document.getElementById('news-title-zh').value;
+            const title_en = document.getElementById('news-title-en').value;
+            const content_zh = document.getElementById('news-content-zh').value;
+            const content_en = document.getElementById('news-content-en').value;
             const date = document.getElementById('news-date').value;
-            if(!title || !date) return Swal.fire('欄位未填', '請填寫標題與日期', 'warning');
+
+            if(!title_zh || !date) return Swal.fire('欄位未填', '請填寫中文標題與日期', 'warning');
             try {
                 await addDoc(collection(db, "announcements"), {
-                    title_zh: title, title_en: title, 
-                    content_zh: content, content_en: content,
+                    title_zh: title_zh, title_en: title_en || title_zh, 
+                    content_zh: content_zh, content_en: content_en || content_zh,
                     tag_zh: '公告', tag_en: 'Notice',
                     date: date, timestamp: serverTimestamp()
                 });
@@ -597,18 +637,18 @@
         }
 
         window.addEvent = async () => {
-            const title = document.getElementById('event-title').value;
+            const title_zh = document.getElementById('event-title-zh').value;
+            const title_en = document.getElementById('event-title-en').value;
             const date = document.getElementById('event-date').value;
             const time = document.getElementById('event-time').value;
             const loc = document.getElementById('event-loc').value;
             const type = document.getElementById('event-type').value;
             const link = document.getElementById('event-link').value;
-            // 新增連結
 
-            if(!title || !date) return Swal.fire('欄位未填', '請填寫完整資訊', 'warning');
+            if(!title_zh || !date) return Swal.fire('欄位未填', '請填寫完整資訊', 'warning');
             try {
                 await addDoc(collection(db, "events"), {
-                    title_zh: title, title_en: title,
+                    title_zh: title_zh, title_en: title_en || title_zh,
                     date: date, 
                     time: time, location_zh: loc, location_en: loc,
                     type: type, link: link || '', timestamp: serverTimestamp()
@@ -895,11 +935,11 @@
             }
             const hits = [];
             APP_DATA.announcements.forEach(a => {
-                const title = isEn() ? a.title_en : a.title_zh;
+                const title = val(a, 'title');
                 if (title.toLowerCase().includes(queryText)) hits.push({ type: isEn()?'News':'公告', title: title, date: a.date, icon: 'bell' });
             });
             APP_DATA.events.forEach(e => {
-                const title = isEn() ? e.title_en : e.title_zh;
+                const title = val(e, 'title');
                 if (title.toLowerCase().includes(queryText)) hits.push({ type: isEn()?'Event':'活動', title: title, date: e.date, icon: 'calendar' });
             });
             if (hits.length === 0) {
@@ -935,7 +975,7 @@
                 elAuthor.style.opacity = 0;
                 
                 setTimeout(() => {
-                    const text = isEn() ? (data.content_en || data.content) : data.content;
+                    const text = val(data, 'content');
                     elContent.innerText = `"${text}"`;
                     elAuthor.innerText = `- ${data.author || 'Anonymous'}`;
                     elContent.style.opacity = 1;
@@ -963,11 +1003,11 @@
             const newsHtml = announcements.map(item => `
                 <div class="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md hover:shadow-lg transition border-l-4 border-theme">
                     <div class="flex justify-between items-start">
-                        <span class="text-xs font-bold text-theme uppercase">${isEn() ? item.tag_en : item.tag_zh}</span>
+                        <span class="text-xs font-bold text-theme uppercase">${val(item, 'tag')}</span>
                         <span class="text-xs text-gray-400">${item.date}</span>
                     </div>
-                    <h3 class="text-lg font-bold mt-1 mb-3 dark:text-white">${isEn() ? item.title_en : item.title_zh}</h3>
-                    ${item.content_zh ? `<div class="mt-2 text-gray-600 dark:text-gray-300 overflow-x-auto news-content">${formatContent(isEn() ? item.content_en : item.content_zh)}</div>` : ''}
+                    <h3 class="text-lg font-bold mt-1 mb-3 dark:text-white">${val(item, 'title')}</h3>
+                    ${item.content_zh ? `<div class="mt-2 text-gray-600 dark:text-gray-300 overflow-x-auto news-content">${formatContent(val(item, 'content'))}</div>` : ''}
                 </div>
             `).join('');
             return `
@@ -1022,12 +1062,12 @@
                     </div>
                     <div class="ml-4 flex-grow">
                         <div class="flex justify-between items-start">
-                            <h3 class="text-lg font-bold dark:text-white">${isEn() ? ev.title_en : ev.title_zh}</h3>
+                            <h3 class="text-lg font-bold dark:text-white">${val(ev, 'title')}</h3>
                             <span class="text-xs px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300">${isEn() ?
                                 ev.type : (ev.type==='Holiday'?'假日':ev.type==='Academic'?'教務':'活動')}</span>
                         </div>
                         <p class="text-sm text-gray-500 flex items-center gap-1 mt-1">
-                            <i data-lucide="map-pin" class="w-3 h-3"></i> ${isEn() ? ev.location_en : ev.location_zh} | 
+                            <i data-lucide="map-pin" class="w-3 h-3"></i> ${val(ev, 'location')} | 
                             <i data-lucide="clock" class="w-3 h-3"></i> ${ev.time}
                         </p>
                         ${ev.link ? `
@@ -1069,8 +1109,8 @@
                 <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md flex flex-col items-center text-center border-t-4 border-theme hover:scale-105 transition-transform duration-300">
                     <div class="text-6xl mb-4 animate-bounce-slow">${l.icon}</div>
                     <h3 class="text-xl font-bold text-theme">${t(l.roleKey)}</h3>
-                    <p class="text-2xl font-bold dark:text-white my-2 uppercase">${isEn() ? l.name_en : l.name_zh}</p>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed px-4 text-left w-full">${isEn() ? l.desc_en : l.desc_zh}</p>
+                    <p class="text-2xl font-bold dark:text-white my-2 uppercase">${val(l, 'name')}</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed px-4 text-left w-full">${val(l, 'desc')}</p>
                 </div>
             `).join('');
             const deptsHtml = APP_DATA.orgDepts.map(d => `
@@ -1082,11 +1122,11 @@
                     <div class="flex justify-between mb-4">
                         <div class="text-center w-1/2">
                             <span class="text-xs text-gray-400 block">${t('role_chief')}</span>
-                            <span class="font-bold text-lg dark:text-white uppercase">${isEn() && d.chief_en ? d.chief_en : d.chief}</span>
+                            <span class="font-bold text-lg dark:text-white uppercase">${val(d, 'chief')}</span>
                         </div>
-                        ${d.deputy ? `<div class="text-center w-1/2 border-l dark:border-gray-700"><span class="text-xs text-gray-400 block">${t('role_deputy')}</span><span class="font-bold text-lg dark:text-white uppercase">${isEn() && d.deputy_en ? d.deputy_en : d.deputy}</span></div>` : ''}
+                        ${d.deputy ? `<div class="text-center w-1/2 border-l dark:border-gray-700"><span class="text-xs text-gray-400 block">${t('role_deputy')}</span><span class="font-bold text-lg dark:text-white uppercase">${val(d, 'deputy')}</span></div>` : ''}
                     </div>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg leading-relaxed text-justify">${isEn() ? d.desc_en : d.desc_zh}</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg leading-relaxed text-justify">${val(d, 'desc')}</p>
                 </div>
             `).join('');
             return `<h1 class="text-3xl font-bold mb-8 text-center text-theme">${t('orgTitle')}</h1><div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-12">${leadersHtml}</div><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr">${deptsHtml}</div>`;
@@ -1096,7 +1136,7 @@
             const rows = APP_DATA.finance.map(f => `
                 <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
                     <td class="py-3 px-4 dark:text-gray-300 whitespace-nowrap">${f.date}</td>
-                    <td class="py-3 px-4 font-medium dark:text-white">${isEn() ? f.item_en : f.item_zh}</td>
+                    <td class="py-3 px-4 font-medium dark:text-white">${val(f, 'item')}</td>
                     <td class="py-3 px-4 text-right"><span class="${f.type === 'In' ? 'text-green-500 bg-green-50 dark:bg-green-900/30' : 'text-red-500 bg-red-50 dark:bg-red-900/30'} font-bold px-2 py-1 rounded">${f.amount > 0 ? '+' : ''}${f.amount}</span></td>
                 </tr>
             `).join('');
@@ -1133,7 +1173,7 @@
                         </div>
                     </div>
                     <span class="text-xs bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded text-gray-700 dark:text-gray-200 mb-2">${c.category}</span>
-                    <h3 class="font-bold dark:text-white text-lg">${isEn() ? c.name_en : c.name_zh}</h3>
+                    <h3 class="font-bold dark:text-white text-lg">${val(c, 'name')}</h3>
                     <a href="${c.ig}" target="_blank" class="mt-4 text-pink-600 hover:text-pink-700 flex items-center gap-1 font-medium group-hover:underline"><i data-lucide="instagram" class="w-4 h-4"></i> Instagram</a>
                 </div>
             `).join('');
@@ -1146,7 +1186,7 @@
                     <div class="flex items-center gap-4">
                         <div class="bg-theme/10 p-3 rounded-full text-theme group-hover:bg-theme group-hover:text-white transition"><i data-lucide="file-down"></i></div>
                         <div>
-                            <h3 class="font-bold text-lg dark:text-white">${isEn() ? d.title_en : d.title_zh}</h3>
+                            <h3 class="font-bold text-lg dark:text-white">${val(d, 'title')}</h3>
                             <p class="text-sm text-gray-500">${d.date} • ${d.type}</p>
                         </div>
                     </div>
@@ -1182,7 +1222,7 @@
         function renderMeetings() {
             const list = APP_DATA.meetings.length ? APP_DATA.meetings.map(m => `
                 <div class="flex items-center justify-between bg-white dark:bg-gray-800 p-4 rounded-lg shadow hover:bg-gray-50 dark:hover:bg-gray-700 transition cursor-pointer border-l-4 border-gray-400">
-                    <div class="flex items-center gap-4"><div class="bg-gray-100 dark:bg-gray-600 p-3 rounded text-gray-500 dark:text-gray-300"><i data-lucide="file-text"></i></div><div><h3 class="font-bold dark:text-white">${isEn() ? m.title_en : m.title_zh}</h3><p class="text-sm text-gray-500">${m.date}</p></div></div>
+                    <div class="flex items-center gap-4"><div class="bg-gray-100 dark:bg-gray-600 p-3 rounded text-gray-500 dark:text-gray-300"><i data-lucide="file-text"></i></div><div><h3 class="font-bold dark:text-white">${val(m, 'title')}</h3><p class="text-sm text-gray-500">${m.date}</p></div></div>
                     <a href="${m.file}" target="_blank" class="text-theme hover:underline text-sm font-bold">PDF</a>
                 </div>
             `).join('') : `<p class="text-center text-gray-500">暫無公開的會議記錄。</p>`;
@@ -1225,13 +1265,27 @@
                     contentHtml = `
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
-                                <h3 class="font-bold mb-2 dark:text-white">新增公告</h3>
-                                <input id="news-title" class="w-full mb-2 p-2 rounded dark:bg-gray-800 dark:text-white" placeholder="標題">
-                                <input id="news-date" type="date" class="w-full mb-2 p-2 rounded dark:bg-gray-800 dark:text-white">
-                                <textarea id="news-content" class="w-full mb-2 p-2 rounded dark:bg-gray-800 dark:text-white" placeholder="內容 (支援 HTML)"></textarea>
+                                <h3 class="font-bold mb-2 dark:text-white">新增公告 (支援雙語)</h3>
+                                
+                                <label class="text-xs text-gray-500 mb-1 block">標題 (Title)</label>
+                                <input id="news-title-zh" class="w-full mb-2 p-2 rounded dark:bg-gray-800 dark:text-white" placeholder="中文標題">
+                                <div class="flex gap-2 mb-4">
+                                    <input id="news-title-en" class="w-full p-2 rounded dark:bg-gray-800 dark:text-white" placeholder="English Title">
+                                    <button onclick="autoTranslate('news-title-zh', 'news-title-en')" class="bg-blue-100 text-blue-600 px-3 py-1 rounded text-xs whitespace-nowrap hover:bg-blue-200">✨ AI 翻譯</button>
+                                </div>
+
+                                <input id="news-date" type="date" class="w-full mb-4 p-2 rounded dark:bg-gray-800 dark:text-white">
+                                
+                                <label class="text-xs text-gray-500 mb-1 block">內容 (Content)</label>
+                                <textarea id="news-content-zh" class="w-full mb-2 p-2 rounded dark:bg-gray-800 dark:text-white" placeholder="中文內容 (支援 HTML)"></textarea>
+                                <div class="flex gap-2 mb-4">
+                                    <textarea id="news-content-en" class="w-full p-2 rounded dark:bg-gray-800 dark:text-white" placeholder="English Content"></textarea>
+                                    <button onclick="autoTranslate('news-content-zh', 'news-content-en')" class="bg-blue-100 text-blue-600 px-3 py-1 rounded text-xs whitespace-nowrap hover:bg-blue-200 h-10">✨ AI 翻譯</button>
+                                </div>
+
                                 <button onclick="addNews()" class="bg-theme text-white px-4 py-2 rounded w-full">${t('add_btn')}</button>
                             </div>
-                            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow h-[400px] overflow-y-auto">
+                            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow h-[600px] overflow-y-auto">
                                 <h3 class="font-bold mb-2 dark:text-white">管理公告 (Firebase)</h3>
                                 ${list || `<p class="text-gray-400 text-sm">${t('no_data')}</p>`}
                             </div>
@@ -1250,7 +1304,14 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                              <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
                                 <h3 class="font-bold mb-2 dark:text-white">新增活動</h3>
-                                <input id="event-title" class="w-full mb-2 p-2 rounded dark:bg-gray-800 dark:text-white" placeholder="活動名稱">
+                                
+                                <label class="text-xs text-gray-500 mb-1 block">活動名稱 (Title)</label>
+                                <input id="event-title-zh" class="w-full mb-2 p-2 rounded dark:bg-gray-800 dark:text-white" placeholder="中文名稱">
+                                <div class="flex gap-2 mb-4">
+                                    <input id="event-title-en" class="w-full p-2 rounded dark:bg-gray-800 dark:text-white" placeholder="English Title">
+                                    <button onclick="autoTranslate('event-title-zh', 'event-title-en')" class="bg-blue-100 text-blue-600 px-3 py-1 rounded text-xs whitespace-nowrap hover:bg-blue-200">✨ AI 翻譯</button>
+                                </div>
+
                                 <div class="flex gap-2 mb-2">
                                     <input id="event-date" type="date" class="w-1/2 p-2 rounded dark:bg-gray-800 dark:text-white">
                                     <input id="event-time" class="w-1/2 p-2 rounded dark:bg-gray-800 dark:text-white" placeholder="時間 (e.g. 08:00)">
@@ -1264,7 +1325,7 @@
                                 </select>
                                 <button onclick="addEvent()" class="bg-theme text-white px-4 py-2 rounded w-full">${t('add_btn')}</button>
                             </div>
-                            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow h-[400px] overflow-y-auto">
+                            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow h-[600px] overflow-y-auto">
                                 <h3 class="font-bold mb-2 dark:text-white">管理活動 (Firebase)</h3>
                                 ${list || `<p class="text-gray-400 text-sm">${t('no_data')}</p>`}
                             </div>
