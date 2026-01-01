@@ -270,7 +270,7 @@
             ],
             events: [
                 // [CLEANED] 這裡清空了，但保留一個註解的範例以免程式壞掉
-                // { id: 'e_demo', date: '2025-12-25', title_zh: '活動範例', title_en: 'Event Demo', location_zh: '大禮堂', location_en: 'Auditorium', time: '13:00', type: 'Activity', link: '#' }
+                // { id: 'e_demo', date: '2025-12-25', title_zh: '聖誕歌唱大賽', title_en: 'Christmas Singing Contest', location_zh: '大禮堂', location_en: 'Auditorium', time: '13:00', type: 'Activity', link: '#' }
             ],
             finance: [
                 // [CLEANED] 這裡清空了，等待正式輸入
@@ -361,7 +361,7 @@
         // 資料容器
         let APP_DATA = JSON.parse(JSON.stringify(STATIC_DATA));
         let SYSTEM_SETTINGS = {
-            marquee: '📢 歡迎來到北港高中學生會官方網站！'
+            marquee: '📢 歡迎來到北港高中學生會官方網站！最新活動：金勾盃歌唱比賽決賽將於 12/25 舉行！'
         };
 
         const I18N = {
@@ -1244,7 +1244,7 @@
                         <div class="bg-theme/10 p-3 rounded-full text-theme group-hover:bg-theme group-hover:text-white transition"><i data-lucide="file-down"></i></div>
                         <div>
                             <h3 class="font-bold text-lg dark:text-white">${val(d, 'title')}</h3>
-                            <p class="text-sm text-gray-500">${d.date} • ${d.type}</p>
+                            <p class="text-sm text-gray-500">${d.date} • ${isEn() ? d.type : (d.type==='Academic'?'教務':d.type==='Event'?'活動':'其他')}</p>
                         </div>
                     </div>
                     <a href="${d.file}" target="_blank" class="bg-theme text-white px-4 py-2 rounded-lg hover:bg-theme/80 transition flex items-center gap-2 shadow">
