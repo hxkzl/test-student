@@ -71,17 +71,17 @@
         ::-webkit-scrollbar-thumb { background: #00c8b7; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #00a092; }
 
-        [cite_start]/* [NEW] 強制設定公告內容中的連結樣式 [cite: 56, 57] */
+        /* [修复] 公告連結樣式：確保連結有顏色且可點擊 */
         .news-content a {
-            color: #00c8b7; /* 使用你的主題色 */
+            color: #00c8b7; 
             text-decoration: underline;
             font-weight: bold;
             cursor: pointer;
             position: relative;
-            z-index: 10; /* 確保不被擋住 */
+            z-index: 10;
         }
         .news-content a:hover {
-            color: #008c80; /* 深一點的顏色 */
+            color: #008c80;
         }
     </style>
 </head>
@@ -214,7 +214,6 @@
     <script type="module">
         // 1. 引入 Firebase SDK
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        // [新增] 引入 where 用於查詢
         import { getFirestore, collection, getDocs, getDoc, setDoc, addDoc, deleteDoc, doc, serverTimestamp, query, orderBy, limit, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
@@ -666,7 +665,7 @@
             }
         }
 
-        [cite_start]// [NEW] 載入已發布的告白 (用於刪除) [cite: 58]
+        // [NEW] 載入已發布的告白 (用於刪除)
         window.loadPublicConfessions = async () => {
             const div = document.getElementById('admin-public-list');
             if(!div) return;
@@ -1199,7 +1198,7 @@
                         </div>
                     `;
                 }
-                [cite_start]// [MODIFIED] Tab Content: Confessions (Moderation + Public List) [cite: 58]
+                // [MODIFIED] Tab Content: Confessions (Moderation + Public List)
                 else if (tab === 'confessions') {
                     // 同時載入「待審核」與「已發布」
                     setTimeout(() => {
