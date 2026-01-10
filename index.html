@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>北港高中學生會 | PKSH Student Council</title>
+    <link rel="icon" type="image/png" href="大頭貼.jpg">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -59,7 +60,7 @@
         }
 
         /* Modal Transitions */
-        #search-modal, #confession-modal { transition: opacity 0.3s ease-in-out; }
+        #search-modal, #confession-modal, #lightbox-modal { transition: opacity 0.3s ease-in-out; }
         
         /* Global Transitions */
         body, div, nav, header, button { transition: background-color 0.3s, color 0.3s, border-color 0.3s; }
@@ -71,7 +72,7 @@
         ::-webkit-scrollbar-thumb { background: #00c8b7; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #00a092; }
 
-        /* [重要] 公告連結樣式 */
+        /* [重要] 公告連結樣式：確保連結有顏色、底線、且層級最高可點擊 */
         .news-content a {
             color: #00c8b7 !important; 
             text-decoration: underline !important;
@@ -87,6 +88,11 @@
         .news-content a.block {
             text-decoration: none !important;
             color: inherit !important;
+        }
+
+        /* Photo Gallery Hover Effect */
+        .gallery-item:hover .gallery-overlay {
+            opacity: 1;
         }
     </style>
 </head>
@@ -111,6 +117,8 @@
                 <nav class="hidden xl:flex space-x-1 items-center overflow-x-auto no-scrollbar">
                     <button class="nav-btn px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition whitespace-nowrap" onclick="navigate('home')" data-key="home">首頁</button>
                     <button class="nav-btn px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition whitespace-nowrap" onclick="navigate('events')" data-key="events">近期活動</button>
+                    <button class="nav-btn px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition whitespace-nowrap" onclick="navigate('gallery')" data-key="gallery">活動花絮</button>
+                    
                     <button class="nav-btn px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition whitespace-nowrap" onclick="navigate('clubs')" data-key="clubs">社團專區</button>
                     <button class="nav-btn px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition whitespace-nowrap" onclick="navigate('mailboxes')" data-key="mailboxes">信箱專區</button>
                     <button class="nav-btn px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition whitespace-nowrap" onclick="navigate('downloads')" data-key="downloads">資料下載</button>
@@ -142,6 +150,7 @@
             <div class="px-4 pt-2 pb-4 space-y-1">
                 <button class="block w-full text-left py-3 px-3 rounded-md font-medium hover:bg-gray-50 dark:hover:bg-gray-700" onclick="navigate('home')" data-key="home">首頁</button>
                 <button class="block w-full text-left py-3 px-3 rounded-md font-medium hover:bg-gray-50 dark:hover:bg-gray-700" onclick="navigate('events')" data-key="events">近期活動</button>
+                <button class="block w-full text-left py-3 px-3 rounded-md font-medium hover:bg-gray-50 dark:hover:bg-gray-700" onclick="navigate('gallery')" data-key="gallery">活動花絮</button>
                 <button class="block w-full text-left py-3 px-3 rounded-md font-medium hover:bg-gray-50 dark:hover:bg-gray-700" onclick="navigate('clubs')" data-key="clubs">社團專區</button>
                 <button class="block w-full text-left py-3 px-3 rounded-md font-medium hover:bg-gray-50 dark:hover:bg-gray-700" onclick="navigate('mailboxes')" data-key="mailboxes">信箱專區</button>
                 <button class="block w-full text-left py-3 px-3 rounded-md font-medium hover:bg-gray-50 dark:hover:bg-gray-700" onclick="navigate('downloads')" data-key="downloads">資料下載</button>
@@ -163,30 +172,13 @@
         <div id="search-results" class="w-full max-w-2xl mt-4 space-y-2 overflow-y-auto max-h-[70vh] pb-10"></div>
     </div>
 
-    <div id="confession-modal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md shadow-2xl transform scale-100 transition-all animate-fade-in">
-            <h3 class="text-2xl font-bold mb-4 text-theme flex items-center gap-2"><i data-lucide="heart" class="text-pink-500"></i> 我要告白</h3>
-            <p class="text-sm text-gray-500 mb-4 dark:text-gray-400">寫下你想說的話，讓全校都看見！（目前設為審核制，送出後需待管理員核准才會顯示）</p>
-            
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium mb-1 dark:text-gray-300">告白內容 <span class="text-red-500">*</span></label>
-                    <textarea id="confession-input-content" rows="3" class="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-theme outline-none transition" placeholder="想說什麼..."></textarea>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1 dark:text-gray-300">英文翻譯 (選填)</label>
-                    <textarea id="confession-input-content-en" rows="2" class="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-theme outline-none transition" placeholder="English translation..."></textarea>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1 dark:text-gray-300">署名</label>
-                    <input type="text" id="confession-input-author" class="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-theme outline-none transition" placeholder="例如：高一小明">
-                </div>
-            </div>
-
-            <div class="flex justify-end gap-3 mt-6">
-                <button onclick="toggleConfessionModal()" class="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded-lg dark:hover:bg-gray-700 dark:text-gray-300 transition">取消</button>
-                <button onclick="submitConfession()" class="px-6 py-2 bg-theme text-white rounded-lg font-bold hover:bg-theme-dark transition shadow-lg hover:shadow-xl">送出</button>
-            </div>
+    <div id="lightbox-modal" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm hidden flex items-center justify-center p-4" onclick="closeLightbox()">
+        <button onclick="closeLightbox()" class="absolute top-4 right-4 text-white hover:text-gray-300 z-50">
+            <i data-lucide="x" class="w-8 h-8"></i>
+        </button>
+        <div class="max-w-5xl w-full max-h-screen flex flex-col items-center">
+            <img id="lightbox-img" src="" class="max-h-[85vh] max-w-full object-contain rounded shadow-2xl" onclick="event.stopPropagation()">
+            <p id="lightbox-caption" class="text-white mt-4 text-center text-lg font-bold"></p>
         </div>
     </div>
 
@@ -250,7 +242,6 @@
         }
 
         // --- 靜態資料 (Fallback) ---
-        // [CLEANED] 清空了測試資料，保留必要結構
         const STATIC_DATA = {
             announcements: [
                 { 
@@ -263,17 +254,13 @@
                     content_en: 'https://linktr.ee/pkshsu?utm_source=ig&utm_medium=social&utm_content=link_in_bio&fbclid=PAb21jcAPC4qRleHRuA2FlbQIxMQBzcnRjBmFwcF9pZA81NjcwNjczNDMzNTI0MjcAAaeHqdgPGR_-3r8dZkSNWf5ppn5iFKdKdgi26JypXij6uoGGQUrU6CP1NAXAig_aem_CFVbEBehnQMXtEfUGpJ7LA'
                 }
             ],
-            confessionWall: [
-                { id: 's1', content: "傳情的巧克力真的很好吃，謝謝學姊！", content_en: "The chocolate delivery was delicious, thank you senior!", author: "高一的小明" },
-                { id: 's2', content: "金勾盃大家加油！期待神秘嘉賓！", content_en: "Good luck everyone on Jingle Bells! Can't wait for the mystery guest!", author: "路過的同學" },
-                { id: 's3', content: "學生會辛苦了，活動辦得很棒！", content_en: "Student Council, thank you for your hard work! Great event!", author: "高三老屁股" }
-            ],
-            events: [
-                // [CLEANED] 這裡清空了，但保留一個註解的範例以免程式壞掉
-                // { id: 'e_demo', date: '2025-12-25', title_zh: '活動範例', title_en: 'Event Demo', location_zh: '大禮堂', location_en: 'Auditorium', time: '13:00', type: 'Activity', link: '#' }
-            ],
-            finance: [
-                // [CLEANED] 這裡清空了，等待正式輸入
+            // [REMOVED] 告白牆資料已移除
+            events: [],
+            finance: [],
+            // [NEW] Photos Placeholder
+            photos: [
+                { url: 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80', title_zh: '校園一隅 (範例)', title_en: 'Campus Corner' },
+                { url: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80', title_zh: '晚會活動 (範例)', title_en: 'Night Event' }
             ],
             clubs: [
                 { name_zh: '熱舞社', name_en: 'Pop Dance Club', category: 'Dance', emoji: '💃', ig: 'https://www.instagram.com/pkdc.20_flaming/' },
@@ -353,9 +340,7 @@
                 }
             ],
             meetings: [],
-            downloads: [
-                // [CLEANED] 清空下載區，保留範例註解
-            ]
+            downloads: []
         };
 
         // 資料容器
@@ -368,44 +353,48 @@
             zh: {
                 home: '首頁', events: '近期活動', mailboxes: '信箱專區', clubs: '社團專區', downloads: '資料下載',
                 contact: '聯絡我們', org: '組織架構', finance: '財務明細', meetings: '會議紀錄', admin: '後台管理',
-                marquee: '', // 動態載入
+                gallery: '活動花絮',
+                marquee: '', 
                 heroTitle: '北港高中學生會互動網站',
                 heroSubtitle: '你的聲音，我們的行動。共創更美好的校園生活。',
-                btnComplaint: '前往信箱專區', news: '最新公告', confession: '匿名告白牆',
+                btnComplaint: '前往信箱專區', news: '最新公告',
                 financeTitle: '財務明細', orgTitle: '學生會組織架構', eventTitle: '近期活動一覽',
                 meetingTitle: '會議記錄存檔', clubTitle: '社團專區', downloadTitle: '資料下載專區',
+                galleryTitle: '精彩活動花絮',
                 rightsMailbox: '學權信箱', rightsDesc: '發現校園設備損壞、對學校政策有疑問或建議？請填寫此表單。',
                 anonMailbox: '匿名信箱', anonDesc: '對學生會的施政方針、活動規劃有任何建議？歡迎匿名填寫。',
                 goToForm: '前往填寫表單', searchPlaceholder: '輸入關鍵字搜尋公告或活動...', noResults: '沒有找到相關結果',
                 col_date: '日期', col_item: '項目', col_amount: '金額',
                 role_pres: '會長', role_vp: '副會長', role_admin: '行政組', role_act: '活動組', role_mobile: '機動組',
                 role_pr: '公關組', role_ga: '總務組', role_art: '美宣組', role_chief: '組長', role_deputy: '副組長',
-                download_btn: '下載檔案', write_confession: '我要告白',
+                download_btn: '下載檔案',
                 filter_all: '全部', filter_academic: '教務', filter_holiday: '假日', filter_event: '活動',
                 login_title: '學生會幹部登入', login_btn: '登入', login_email: '電子郵件', login_pwd: '密碼',
-                admin_dashboard: '管理儀表板', admin_news: '公告管理', admin_events: '活動管理', admin_confess: '告白審核', admin_system: '系統設定', admin_logout: '登出',
+                admin_dashboard: '管理儀表板', admin_news: '公告管理', admin_events: '活動管理', admin_photos: '照片管理', admin_system: '系統設定', admin_logout: '登出',
                 add_btn: '新增', save_btn: '儲存設定', delete_btn: '刪除', no_data: '暫無資料',
                 admin_finance: '財務管理', admin_meetings: '會議記錄', admin_downloads: '下載管理'
             },
             en: {
                 home: 'Home', events: 'Events', mailboxes: 'Mailboxes', clubs: 'Clubs', downloads: 'Downloads',
                 contact: 'Contact Us', org: 'Organization', finance: 'Finance', meetings: 'Minutes', admin: 'Admin Panel',
+                gallery: 'Gallery',
                 marquee: '', 
                 heroTitle: 'PKSH Student Council',
                 heroSubtitle: 'Your Voice, Our Action. Creating a better campus life together.',
-                btnComplaint: 'Go to Mailboxes', news: 'Latest News', confession: 'Confession Wall',
+                btnComplaint: 'Go to Mailboxes', news: 'Latest News',
                 financeTitle: 'Financial Details', orgTitle: 'Organization', eventTitle: 'Upcoming Events',
                 meetingTitle: 'Meeting Minutes', clubTitle: 'Student Clubs', downloadTitle: 'Download Zone',
+                galleryTitle: 'Activity Gallery',
                 rightsMailbox: 'Student Rights Mailbox', rightsDesc: 'Report damaged facilities or suggest policy changes.',
                 anonMailbox: 'Anonymous Mailbox', anonDesc: 'Suggestions for the Student Council? Share your thoughts anonymously.',
                 goToForm: 'Fill out Form', searchPlaceholder: 'Search news or events...', noResults: 'No results found',
                 col_date: 'Date', col_item: 'Item', col_amount: 'Amount',
                 role_pres: 'President', role_vp: 'Vice President', role_admin: 'Admin Dept', role_act: 'Activity Dept', role_mobile: 'Logistics Dept',
                 role_pr: 'Public Relations', role_ga: 'General Affairs', role_art: 'Art & Design', role_chief: 'Chief', role_deputy: 'Deputy',
-                download_btn: 'Download', write_confession: 'Write Confession',
+                download_btn: 'Download',
                 filter_all: 'All', filter_academic: 'Academic', filter_holiday: 'Holiday', filter_event: 'Event',
                 login_title: 'Staff Login', login_btn: 'Login', login_email: 'Email', login_pwd: 'Password',
-                admin_dashboard: 'Dashboard', admin_news: 'Manage News', admin_events: 'Manage Events', admin_confess: 'Confessions', admin_system: 'System Settings', admin_logout: 'Logout',
+                admin_dashboard: 'Dashboard', admin_news: 'Manage News', admin_events: 'Manage Events', admin_photos: 'Manage Photos', admin_system: 'System Settings', admin_logout: 'Logout',
                 add_btn: 'Add', save_btn: 'Save Settings', delete_btn: 'Delete', no_data: 'No Data',
                 admin_finance: 'Manage Finance', admin_meetings: 'Manage Minutes', admin_downloads: 'Manage Downloads'
             }
@@ -415,23 +404,19 @@
             view: 'home',
             lang: 'zh',
             darkMode: false,
-            confessionTimer: null,
-            confessionIndex: 0,
             eventFilter: 'All',
             user: null, // User Auth State
-            adminTab: 'news', // news, events, confessions, system, finance, meetings, downloads
+            adminTab: 'news', // news, events, photos, system, finance, meetings, downloads
             isLoading: false
         };
 
         const t = (key) => I18N[APP_STATE.lang][key] || key;
         const isEn = () => APP_STATE.lang === 'en';
 
-        // [NEW] 智慧欄位選擇器：自動判斷回傳中文或英文資料
+        // [NEW] 智慧欄位選擇器
         const val = (data, field) => {
             if (!data) return '';
-            // 如果是英文模式，嘗試找 _en 欄位，沒有的話找 _zh，再沒有找原欄位
             if (isEn()) return data[field + '_en'] || data[field + '_zh'] || data[field] || '';
-            // 如果是中文模式，嘗試找 _zh 欄位，沒有的話找原欄位
             return data[field + '_zh'] || data[field] || '';
         };
 
@@ -456,42 +441,28 @@
             return { month, day };
         }
 
-        // [重要更新] 智慧網址轉換器：自動偵測 YouTube 和 PDF
+        // 智慧網址轉換器：自動偵測 YouTube 和 PDF
         function formatContent(text) {
             if (!text) return '';
-            
-            // 如果是純 HTML 標籤（如之前的範例），直接回傳
             if (/<[a-z][\s\S]*>/i.test(text) && !text.startsWith('http')) return text;
-            
-            // 正規表達式抓取網址
             const urlRegex = /(https?:\/\/[^\s]+)/g;
-            
             return text.replace(urlRegex, (url) => {
-                // 1. YouTube 偵測 (轉為嵌入影片)
                 const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
                 if (ytMatch && ytMatch[1]) {
                     return `<div class="my-4 w-full aspect-video"><iframe src="https://www.youtube.com/embed/${ytMatch[1]}" class="w-full h-full rounded-lg shadow-lg" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
                 }
-                
-                // 2. PDF 偵測 (轉為紅色按鈕)
                 if (url.toLowerCase().endsWith('.pdf')) {
-                    // 嘗試從網址抓檔名，解碼
                     let filename = '點此下載 PDF 文件';
                     try {
                         const urlObj = new URL(url);
                         const path = urlObj.pathname.split('/').pop();
                         if(path) filename = decodeURIComponent(path);
                     } catch(e){}
-                    
                     return `<a href="${url}" target="_blank" class="btn-link block mt-2 w-full text-center bg-red-50 text-red-600 border border-red-200 rounded-lg py-3 hover:bg-red-100 transition font-bold"><i data-lucide="file-down" class="inline-block mr-2"></i>${filename}</a>`;
                 }
-                
-                // 3. 圖片偵測
                 if (/\.(jpeg|jpg|gif|png)$/i.test(url)) {
                      return `<img src="${url}" class="mt-2 rounded-lg shadow-md max-h-64 mx-auto" alt="Image">`;
                 }
-
-                // 4. 一般連結 (隱藏原始網址，顯示文字)
                 return `<a href="${url}" target="_blank" class="text-theme underline font-bold hover:text-theme-dark transition">🔗 開啟連結</a>`;
             });
         }
@@ -503,7 +474,7 @@
             try {
                 APP_STATE.isLoading = true;
 
-                // 0. Load System Settings (Marquee)
+                // 0. Load Settings
                 const settingsRef = doc(db, "settings", "config");
                 const settingsSnap = await getDoc(settingsRef);
                 if (settingsSnap.exists()) {
@@ -513,32 +484,14 @@
                 }
                 updateMarquee();
 
-                // 1. Load Confessions (Public: only 'approved')
-                // 需在 Firebase Console 建立複合索引 (status Asc, timestamp Desc)
-                const qConfess = query(collection(db, "confessions"), where("status", "==", "approved"), orderBy("timestamp", "desc"), limit(20));
-                const snapConfess = await getDocs(qConfess);
-                const fetchedConfessions = [];
-                snapConfess.forEach((doc) => {
-                    const d = doc.data();
-                    fetchedConfessions.push({
-                        id: doc.id,
-                        content: d.content,
-                        content_en: d.content_en || d.content,
-                        author: d.author
-                    });
-                });
-                if (fetchedConfessions.length > 0) {
-                    APP_DATA.confessionWall = fetchedConfessions;
-                }
-
-                // 2. Load Announcements
+                // 1. Load Announcements
                 const qNews = query(collection(db, "announcements"), orderBy("date", "desc"));
                 const snapNews = await getDocs(qNews);
                 const fetchedNews = [];
                 snapNews.forEach(doc => { fetchedNews.push({ id: doc.id, ...doc.data() }); });
                 if(fetchedNews.length > 0) APP_DATA.announcements = [...fetchedNews, ...STATIC_DATA.announcements];
 
-                // 3. Load Events
+                // 2. Load Events
                 const qEvents = query(collection(db, "events"), orderBy("date", "asc"));
                 const snapEvents = await getDocs(qEvents);
                 const fetchedEvents = [];
@@ -548,28 +501,35 @@
                     APP_DATA.events.sort((a,b) => a.date.localeCompare(b.date));
                 }
 
-                // 4. Load Finance
+                // 3. Load Finance
                 const qFinance = query(collection(db, "finance"), orderBy("date", "desc"));
                 const snapFinance = await getDocs(qFinance);
                 const fetchedFinance = [];
                 snapFinance.forEach(doc => fetchedFinance.push({ id: doc.id, ...doc.data() }));
                 if(fetchedFinance.length > 0) APP_DATA.finance = fetchedFinance;
 
-                // 5. Load Meetings
+                // 4. Load Meetings
                 const qMeetings = query(collection(db, "meetings"), orderBy("date", "desc"));
                 const snapMeetings = await getDocs(qMeetings);
                 const fetchedMeetings = [];
                 snapMeetings.forEach(doc => fetchedMeetings.push({ id: doc.id, ...doc.data() }));
                 if(fetchedMeetings.length > 0) APP_DATA.meetings = fetchedMeetings;
 
-                // 6. Load Downloads
+                // 5. Load Downloads
                 const qDownloads = query(collection(db, "downloads"), orderBy("date", "desc"));
                 const snapDownloads = await getDocs(qDownloads);
                 const fetchedDownloads = [];
                 snapDownloads.forEach(doc => fetchedDownloads.push({ id: doc.id, ...doc.data() }));
                 if(fetchedDownloads.length > 0) APP_DATA.downloads = fetchedDownloads;
 
-                if(APP_STATE.view === 'home' || APP_STATE.view === 'events') render();
+                // 6. [NEW] Load Photos
+                const qPhotos = query(collection(db, "photos"), orderBy("timestamp", "desc"));
+                const snapPhotos = await getDocs(qPhotos);
+                const fetchedPhotos = [];
+                snapPhotos.forEach(doc => fetchedPhotos.push({ id: doc.id, ...doc.data() }));
+                if(fetchedPhotos.length > 0) APP_DATA.photos = fetchedPhotos;
+
+                if(APP_STATE.view === 'home' || APP_STATE.view === 'events' || APP_STATE.view === 'gallery') render();
             } catch (error) {
                 console.log("Firebase 讀取失敗:", error);
             } finally {
@@ -614,7 +574,6 @@
             render();
         }
 
-        // [NEW] AI Auto-Translate Function
         window.autoTranslate = async (sourceId, targetId) => {
             const sourceText = document.getElementById(sourceId).value;
             const targetInput = document.getElementById(targetId);
@@ -625,7 +584,6 @@
             targetInput.disabled = true;
 
             try {
-                // Using MyMemory Free API
                 const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(sourceText)}&langpair=zh-TW|en-US`);
                 const data = await res.json();
                 
@@ -688,8 +646,6 @@
             }
         }
 
-        // [新增] 財務
-        // [FIXED] Force negative number for expenses
         window.addFinance = async () => {
             const date = document.getElementById('fin-date').value;
             const item = document.getElementById('fin-item').value;
@@ -698,7 +654,6 @@
             
             if(!date || !item || !amount) return Swal.fire('資料不全', '', 'warning');
             
-            // Force negative for expenses
             if (type === 'Out') amount = -Math.abs(amount);
             else amount = Math.abs(amount);
 
@@ -714,7 +669,6 @@
             }
         }
 
-        // [新增] 會議
         window.addMeeting = async () => {
             const date = document.getElementById('mt-date').value;
             const title = document.getElementById('mt-title').value;
@@ -733,7 +687,6 @@
             }
         }
 
-        // [新增] 下載
         window.addDownload = async () => {
             const date = document.getElementById('dl-date').value;
             const title = document.getElementById('dl-title').value;
@@ -752,130 +705,28 @@
             }
         }
 
-        // [新增] 告白審核邏輯
-        window.loadPendingConfessions = async () => {
-            const div = document.getElementById('admin-pending-list');
-            div.innerHTML = '載入中...';
-            const q = query(collection(db, "confessions"), where("status", "==", "pending"), orderBy("timestamp", "desc"));
-            const snap = await getDocs(q);
-            if(snap.empty) { div.innerHTML = '目前沒有待審核的告白。'; return; }
+        // [NEW] Add Photo Logic
+        window.addPhoto = async () => {
+            const url = document.getElementById('photo-url').value;
+            const title_zh = document.getElementById('photo-title-zh').value;
+            const title_en = document.getElementById('photo-title-en').value;
             
-            div.innerHTML = snap.docs.map(d => {
-                const data = d.data();
-                return `
-                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded border-l-4 border-yellow-400 mb-2">
-                    <p class="font-bold mb-1 dark:text-white">${data.content}</p>
-                    <p class="text-xs text-gray-500 mb-2">From: ${data.author}</p>
-                    <div class="flex gap-2">
-                        <button onclick="approveConfession('${d.id}', '${data.content.replace(/'/g, "\\'")}', '${(data.content_en||'').replace(/'/g, "\\'")}')" class="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600">通過 & 翻譯</button>
-                        <button onclick="rejectConfession('${d.id}')" class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">拒絕</button>
-                    </div>
-                </div>`;
-            }).join('');
-        };
-
-        window.approveConfession = async (id, currentContent, currentEn) => {
-            const { value: formValues } = await Swal.fire({
-                title: '審核並翻譯',
-                html:
-                    `<label class="block text-left mb-1">中文內容</label><input id="swal-content" class="swal2-input m-0 mb-3 w-full" value="${currentContent}">` +
-                    `<label class="block text-left mb-1">英文翻譯</label><input id="swal-en" class="swal2-input m-0 w-full" value="${currentEn || ''}" placeholder="在此輸入翻譯">`,
-                focusConfirm: false,
-                showCancelButton: true,
-                confirmButtonText: '通過並發布',
-                preConfirm: () => {
-                    return [
-                        document.getElementById('swal-content').value,
-                        document.getElementById('swal-en').value
-                    ]
-                }
-            });
-
-            if (formValues) {
-                try {
-                    await setDoc(doc(db, "confessions", id), { 
-                        content: formValues[0],
-                        content_en: formValues[1],
-                        status: 'approved' 
-                    }, { merge: true });
-                    Swal.fire('已發布', '', 'success');
-                    loadPendingConfessions(); // Reload list
-                } catch(e) { Swal.fire('錯誤', e.message, 'error');
-                }
-            }
-        }
-
-        window.rejectConfession = async (id) => {
-            try {
-                await deleteDoc(doc(db, "confessions", id));
-                Swal.fire('已刪除', '', 'success');
-                loadPendingConfessions();
-            } catch(e) { Swal.fire('錯誤', e.message, 'error');
-            }
-        }
-
-        // [NEW] 載入已發布的告白 (用於刪除)
-        window.loadPublicConfessions = async () => {
-            const div = document.getElementById('admin-public-list');
-            if(!div) return;
-            div.innerHTML = '<p class="text-center text-gray-400 text-sm mt-4">載入中...</p>';
+            if(!url) return Swal.fire('請輸入圖片網址', '', 'warning');
             
             try {
-                // 查詢 status == 'approved' 的資料
-                const q = query(collection(db, "confessions"), where("status", "==", "approved"), orderBy("timestamp", "desc"), limit(50));
-                const snap = await getDocs(q);
-                
-                if(snap.empty) { 
-                    div.innerHTML = '<p class="text-center text-gray-400 text-sm mt-10">目前沒有公開的告白。</p>'; 
-                    return; 
-                }
-                
-                div.innerHTML = snap.docs.map(d => {
-                    const data = d.data();
-                    // 這裡的刪除按鈕會呼叫 deleteItem
-                    return `
-                    <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded border-l-4 border-green-400 group relative">
-                        <p class="font-bold text-sm dark:text-white line-clamp-2">${data.content}</p>
-                        <div class="flex justify-between items-end mt-2">
-                            <span class="text-xs text-gray-400">${data.author}</span>
-                            <button onclick="deletePublicConfession('${d.id}')" class="text-xs bg-white dark:bg-gray-600 text-red-500 border border-red-200 dark:border-red-500 px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-900/30 transition">
-                                🗑️ 刪除
-                            </button>
-                        </div>
-                    </div>`;
-                }).join('');
-            } catch (e) {
-                console.error(e);
-                div.innerHTML = `<p class="text-center text-red-400 text-sm">載入失敗 (請確認索引是否建立)</p>`;
-            }
-        };
-
-        // [NEW] 專用的刪除函式 (刪除後只重整列表，不重整整個頁面，體驗較好)
-        window.deletePublicConfession = async (id) => {
-            const result = await Swal.fire({ 
-                title: '確定刪除此告白？', 
-                text: '刪除後將立刻從首頁移除',
-                icon: 'warning', 
-                showCancelButton: true,
-                confirmButtonColor: '#ef4444',
-                confirmButtonText: '是的，刪除'
-            });
-
-            if(result.isConfirmed) {
-                try {
-                    await deleteDoc(doc(db, "confessions", id));
-                    Swal.fire({ title: '已刪除', icon: 'success', timer: 1000, showConfirmButton: false });
-                    loadPublicConfessions(); // 重新載入右側列表
-                    // 如果你希望首頁也即時更新，可以呼叫 loadDataFromFirebase()，但通常不需要
-                } catch(e) { 
-                    Swal.fire('刪除失敗', e.message, 'error'); 
-                }
-            }
+                await addDoc(collection(db, "photos"), {
+                    url, 
+                    title_zh: title_zh || '活動照片', 
+                    title_en: title_en || 'Activity Photo',
+                    timestamp: serverTimestamp()
+                });
+                Swal.fire('新增成功', '', 'success');
+                await loadDataFromFirebase();
+            } catch(e) { Swal.fire('錯誤', e.message, 'error'); }
         }
 
         window.saveSystemSettings = async () => {
             const marqueeText = document.getElementById('system-marquee').value;
-            // 支援使用 " | " 來分割多段跑馬燈
             const marqueeArray = marqueeText.split('|').map(s => s.trim()).filter(s => s);
             try {
                 await setDoc(doc(db, "settings", "config"), { marquee: marqueeArray.length > 1 ? marqueeArray : marqueeText });
@@ -898,43 +749,6 @@
                 } catch(e) { Swal.fire('刪除失敗', '無法刪除靜態資料或權限不足', 'error');
                 }
             }
-        }
-
-        // --- Public Operations ---
-
-        window.submitConfession = async () => {
-            const content = document.getElementById('confession-input-content').value;
-            const content_en = document.getElementById('confession-input-content-en').value;
-            const author = document.getElementById('confession-input-author').value;
-
-            if (!content) {
-                Swal.fire('請輸入內容', '告白內容不能為空喔！', 'warning');
-                return;
-            }
-
-            if (!db) {
-                Swal.fire('模擬送出成功', '目前為靜態模式，資料不會儲存。', 'info');
-                toggleConfessionModal();
-                return;
-            }
-
-            try {
-                await addDoc(collection(db, "confessions"), {
-                    content, content_en: content_en || '', author: author || '匿名',
-                    timestamp: serverTimestamp(), status: 'pending' // [修改] 狀態改為 pending
-                });
-                Swal.fire('送出成功！', '你的心聲已送出，待學生會審核後顯示！', 'success');
-                toggleConfessionModal();
-                document.getElementById('confession-input-content').value = '';
-                // 不重新讀取，因為只顯示 approved
-            } catch (e) {
-                console.error("Error:", e);
-                Swal.fire('傳送失敗', '請稍後再試。', 'error');
-            }
-        };
-        window.toggleConfessionModal = () => {
-            const modal = document.getElementById('confession-modal');
-            modal.classList.toggle('hidden');
         }
 
         // --- Logic ---
@@ -994,34 +808,16 @@
                 lucide.createIcons();
             }
         };
-        function startConfessionCarousel() {
-            if (APP_STATE.confessionTimer) clearInterval(APP_STATE.confessionTimer);
-            const updateConfession = () => {
-                const elContent = document.getElementById('confession-content');
-                const elAuthor = document.getElementById('confession-author');
-                if(!elContent || !elAuthor) return;
-                
-                const list = APP_DATA.confessionWall;
-                if (!list || list.length === 0) {
-                    elContent.innerText = "暫無告白...";
-                    return;
-                }
-                const data = list[APP_STATE.confessionIndex];
-                elContent.style.opacity = 0;
-                elAuthor.style.opacity = 0;
-                
-                setTimeout(() => {
-                    const text = val(data, 'content');
-                    elContent.innerText = `"${text}"`;
-                    elAuthor.innerText = `- ${data.author || 'Anonymous'}`;
-                    elContent.style.opacity = 1;
-                    elAuthor.style.opacity = 1;
-                }, 300);
-                APP_STATE.confessionIndex = (APP_STATE.confessionIndex + 1) % list.length;
-            };
-            updateConfession();
-            APP_STATE.confessionTimer = setInterval(updateConfession, 5000);
-        }
+
+        // [NEW] Lightbox logic
+        window.openLightbox = (url, caption) => {
+            document.getElementById('lightbox-img').src = url;
+            document.getElementById('lightbox-caption').innerText = caption;
+            document.getElementById('lightbox-modal').classList.remove('hidden');
+        };
+        window.closeLightbox = () => {
+            document.getElementById('lightbox-modal').classList.add('hidden');
+        };
 
         // --- Scroll to Top ---
         window.addEventListener('scroll', () => {
@@ -1046,6 +842,27 @@
                     ${item.content_zh ? `<div class="mt-2 text-gray-600 dark:text-gray-300 overflow-x-auto news-content">${formatContent(val(item, 'content'))}</div>` : ''}
                 </div>
             `).join('');
+
+            // [NEW] 取得最近的一個活動用於倒數
+            let nextEventHtml = `<div class="p-4 text-center text-gray-500">暫無即將到來的活動</div>`;
+            const futureEvents = APP_DATA.events.filter(e => new Date(e.date) >= new Date());
+            
+            if (futureEvents.length > 0) {
+                const nextEv = futureEvents[0]; // 假設已排序
+                const daysLeft = Math.ceil((new Date(nextEv.date) - new Date()) / (1000 * 60 * 60 * 24));
+                nextEventHtml = `
+                    <div class="text-center">
+                        <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">NEXT EVENT</span>
+                        <h3 class="text-xl font-bold mt-2 dark:text-white">${val(nextEv, 'title')}</h3>
+                        <div class="my-4">
+                            <span class="text-5xl font-extrabold text-theme">${daysLeft}</span>
+                            <span class="text-gray-500">Days Left</span>
+                        </div>
+                        <p class="text-sm text-gray-500"><i data-lucide="calendar" class="inline w-3 h-3"></i> ${nextEv.date} @ ${val(nextEv, 'location')}</p>
+                    </div>
+                `;
+            }
+
             return `
                 <div class="bg-theme text-white rounded-2xl p-8 mb-10 shadow-lg relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 animate-fade-in">
                     <div class="relative z-10">
@@ -1066,18 +883,50 @@
                         <h2 class="text-2xl font-bold dark:text-white flex items-center gap-2"><i data-lucide="bell" class="text-theme"></i> ${t('news')}</h2>
                         <div class="grid gap-4 md:grid-cols-1">${newsHtml}</div>
                     </div>
-                    <div>
-                        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md sticky top-24">
-                            <h2 class="text-xl font-bold text-pink-500 mb-4 flex items-center gap-2"><i data-lucide="heart"></i> ${t('confession')}</h2>
-                            <div class="bg-pink-50 dark:bg-pink-900/20 p-4 rounded-lg border border-pink-100 dark:border-pink-900 min-h-[120px] flex flex-col justify-center">
-                                <p id="confession-content" class="italic text-gray-700 dark:text-gray-300 text-lg font-medium transition-opacity duration-300">"Loading..."</p>
-                                <p id="confession-author" class="text-right text-xs text-gray-500 mt-2 transition-opacity duration-300"></p>
+
+                    <div class="space-y-6">
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-t-4 border-theme sticky top-24">
+                            ${nextEventHtml}
+                        </div>
+
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
+                            <h3 class="font-bold text-gray-700 dark:text-gray-200 mb-4 flex items-center gap-2"><i data-lucide="link"></i> 常用連結</h3>
+                            <div class="space-y-3">
+                                <a href="https://www.pksh.ylc.edu.tw/" target="_blank" class="block p-3 bg-gray-50 dark:bg-gray-700 rounded hover:bg-gray-100 dark:hover:bg-gray-600 transition flex items-center justify-between group">
+                                    <span class="font-medium dark:text-gray-300">🏫 學校官網</span>
+                                    <i data-lucide="external-link" class="w-4 h-4 text-gray-400 group-hover:text-theme"></i>
+                                </a>
+                                <a href="https://school.ylc.edu.tw/" target="_blank" class="block p-3 bg-gray-50 dark:bg-gray-700 rounded hover:bg-gray-100 dark:hover:bg-gray-600 transition flex items-center justify-between group">
+                                    <span class="font-medium dark:text-gray-300">📊 成績查詢</span>
+                                    <i data-lucide="external-link" class="w-4 h-4 text-gray-400 group-hover:text-theme"></i>
+                                </a>
+                                <a href="#" onclick="Swal.fire('即將推出', '午餐菜單功能建置中', 'info')" class="block p-3 bg-gray-50 dark:bg-gray-700 rounded hover:bg-gray-100 dark:hover:bg-gray-600 transition flex items-center justify-between group">
+                                    <span class="font-medium dark:text-gray-300">🍱 午餐菜單</span>
+                                    <i data-lucide="external-link" class="w-4 h-4 text-gray-400 group-hover:text-theme"></i>
+                                </a>
                             </div>
-                            <button onclick="toggleConfessionModal()" class="block w-full mt-4 bg-pink-500 text-white font-bold py-2 rounded text-center hover:bg-pink-600 transition shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
-                                ${t('write_confession')}
-                            </button>
                         </div>
                     </div>
+                </div>
+            `;
+        }
+
+        // [NEW] Render Gallery
+        function renderGallery() {
+            const photos = APP_DATA.photos;
+            const galleryHtml = photos.length > 0 ? photos.map(p => `
+                <div class="gallery-item break-inside-avoid mb-6 cursor-pointer group relative overflow-hidden rounded-xl shadow-lg" onclick="openLightbox('${p.url}', '${val(p, 'title')}')">
+                    <img src="${p.url}" alt="${val(p, 'title')}" class="w-full object-cover transform group-hover:scale-110 transition duration-500">
+                    <div class="gallery-overlay absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition duration-300 flex items-end p-4">
+                        <p class="text-white font-bold">${val(p, 'title')}</p>
+                    </div>
+                </div>
+            `).join('') : `<p class="col-span-full text-center text-gray-500 py-10">目前沒有活動照片</p>`;
+
+            return `
+                <h1 class="text-3xl font-bold mb-8 text-center text-theme">${t('galleryTitle')}</h1>
+                <div class="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
+                    ${galleryHtml}
                 </div>
             `;
         }
@@ -1184,7 +1033,7 @@
                 <h1 class="text-3xl font-bold mb-6 text-theme text-center">${t('financeTitle')}</h1>
                 <div class="max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
                     <div class="p-6 bg-theme/10 border-b border-theme/20 flex flex-col md:flex-row justify-between items-center gap-4">
-                        <p class="text-sm text-gray-600 dark:text-gray-300">本表僅列出近期收支概況，詳細報表請至學生會總務組查閱。</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-300">本表僅列出近期收支概況，詳細報表請至學生會辦公室查閱。</p>
                         <div class="flex items-center gap-3 bg-white dark:bg-gray-700 px-4 py-2 rounded-lg shadow-sm">
                             <span class="font-bold text-gray-600 dark:text-gray-200">總結餘:</span>
                             <span class="text-2xl font-bold ${total >= 0 ? 'text-green-500' : 'text-red-500'}">
@@ -1396,34 +1245,29 @@
                         </div>
                     `;
                 }
-                // [MODIFIED] Tab Content: Confessions (Moderation + Public List)
-                else if (tab === 'confessions') {
-                    // 同時載入「待審核」與「已發布」
-                    setTimeout(() => {
-                        loadPendingConfessions();
-                        loadPublicConfessions(); // [NEW] 載入已發布列表
-                    }, 100);
-
-                    contentHtml = `
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow h-[500px] flex flex-col">
-                                <div class="flex justify-between items-center mb-4 border-b pb-2 dark:border-gray-700">
-                                    <h3 class="font-bold text-yellow-600 dark:text-yellow-400">🕒 待審核列表</h3>
-                                    <button onclick="loadPendingConfessions()" class="text-xs bg-gray-100 px-2 py-1 rounded hover:bg-gray-200 text-gray-600">重整</button>
-                                </div>
-                                <div id="admin-pending-list" class="overflow-y-auto flex-grow space-y-2 pr-2">
-                                    <p class="text-center py-10 text-gray-400 text-sm">載入中...</p>
-                                </div>
+                // Tab Content: Photos
+                else if (tab === 'photos') {
+                    const list = APP_DATA.photos ? APP_DATA.photos.map(p => `
+                        <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-700 p-3 rounded mb-2">
+                            <div class="flex items-center gap-3">
+                                <img src="${p.url}" class="w-10 h-10 object-cover rounded">
+                                <p class="font-bold dark:text-white text-sm truncate w-32">${p.title_zh}</p>
                             </div>
-
-                            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow h-[500px] flex flex-col">
-                                <div class="flex justify-between items-center mb-4 border-b pb-2 dark:border-gray-700">
-                                    <h3 class="font-bold text-green-600 dark:text-green-400">✅ 已發布 (線上顯示中)</h3>
-                                    <button onclick="loadPublicConfessions()" class="text-xs bg-gray-100 px-2 py-1 rounded hover:bg-gray-200 text-gray-600">重整</button>
-                                </div>
-                                <div id="admin-public-list" class="overflow-y-auto flex-grow space-y-2 pr-2">
-                                    <p class="text-center py-10 text-gray-400 text-sm">載入中...</p>
-                                </div>
+                            <button onclick="deleteItem('photos', '${p.id}')" class="text-red-500 text-sm hover:underline">${t('delete_btn')}</button>
+                        </div>
+                    `).join('') : '';
+                    contentHtml = `
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
+                                <h3 class="font-bold mb-2 dark:text-white">新增照片</h3>
+                                <input id="photo-url" class="w-full mb-2 p-2 rounded dark:bg-gray-800 dark:text-white" placeholder="圖片連結 (URL)">
+                                <input id="photo-title-zh" class="w-full mb-2 p-2 rounded dark:bg-gray-800 dark:text-white" placeholder="中文標題">
+                                <input id="photo-title-en" class="w-full mb-2 p-2 rounded dark:bg-gray-800 dark:text-white" placeholder="English Title">
+                                <button onclick="addPhoto()" class="bg-theme text-white px-4 py-2 rounded w-full">${t('add_btn')}</button>
+                            </div>
+                            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow h-[600px] overflow-y-auto">
+                                <h3 class="font-bold mb-2 dark:text-white">管理照片</h3>
+                                ${list || `<p class="text-gray-400 text-sm">${t('no_data')}</p>`}
                             </div>
                         </div>
                     `;
@@ -1472,7 +1316,7 @@
                                 <h3 class="font-bold mb-2 dark:text-white">上傳會議記錄</h3>
                                 <input id="mt-date" type="date" class="w-full mb-2 p-2 rounded dark:bg-gray-800 dark:text-white">
                                 <input id="mt-title" class="w-full mb-2 p-2 rounded dark:bg-gray-800 dark:text-white" placeholder="標題">
-                                <input id="mt-link" class="w-full mb-2 p-2 rounded dark:bg-gray-800 dark:text-white" placeholder="PDF 檔案連結 (Google Drive)">
+                                <input id="mt-link" class="w-full mb-2 p-2 rounded dark:bg-gray-800 dark:text-white" placeholder="檔案連結 (Google Drive)">
                                 <button onclick="addMeeting()" class="bg-theme text-white px-4 py-2 rounded w-full">發布</button>
                             </div>
                             <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow h-[400px] overflow-y-auto">
@@ -1541,7 +1385,7 @@
                             </div>
                             <button onclick="switchAdminTab('news')" class="text-left px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-800 ${tab==='news'?'bg-white dark:bg-gray-800 shadow font-bold text-theme':''}">${t('admin_news')}</button>
                             <button onclick="switchAdminTab('events')" class="text-left px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-800 ${tab==='events'?'bg-white dark:bg-gray-800 shadow font-bold text-theme':''}">${t('admin_events')}</button>
-                            <button onclick="switchAdminTab('confessions')" class="text-left px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-800 ${tab==='confessions'?'bg-white dark:bg-gray-800 shadow font-bold text-theme':''}">${t('admin_confess')}</button>
+                            <button onclick="switchAdminTab('photos')" class="text-left px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-800 ${tab==='photos'?'bg-white dark:bg-gray-800 shadow font-bold text-theme':''}">${t('admin_photos')}</button>
                             <button onclick="switchAdminTab('finance')" class="text-left px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-800 ${tab==='finance'?'bg-white dark:bg-gray-800 shadow font-bold text-theme':''}">${t('admin_finance')}</button>
                             <button onclick="switchAdminTab('meetings')" class="text-left px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-800 ${tab==='meetings'?'bg-white dark:bg-gray-800 shadow font-bold text-theme':''}">${t('admin_meetings')}</button>
                             <button onclick="switchAdminTab('downloads')" class="text-left px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-800 ${tab==='downloads'?'bg-white dark:bg-gray-800 shadow font-bold text-theme':''}">${t('admin_downloads')}</button>
@@ -1563,11 +1407,6 @@
             const container = document.getElementById('app-container');
             const view = APP_STATE.view;
             
-            if (view !== 'home' && APP_STATE.confessionTimer) {
-                clearInterval(APP_STATE.confessionTimer);
-                APP_STATE.confessionTimer = null;
-            }
-
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 const isActive = btn.dataset.key === view;
                 if(isActive) btn.classList.add('text-theme', 'bg-gray-50', 'dark:bg-gray-700', 'font-bold');
@@ -1586,15 +1425,12 @@
 
             const routes = {
                 'home': renderHome, 'events': renderEvents, 'mailboxes': renderMailboxes,
+                'gallery': renderGallery,
                 'org': renderOrg, 'finance': renderFinance, 'clubs': renderClubs, 'downloads': renderDownloads,
                 'contact': renderContact, 'meetings': renderMeetings, 'admin': renderAdmin
             };
             container.innerHTML = routes[view] ? routes[view]() : renderHome();
             
-            if (view === 'home') {
-                startConfessionCarousel();
-            }
-
             lucide.createIcons();
             window.scrollTo(0,0);
         }
