@@ -74,13 +74,8 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        /* [核心] 電腦版字體縮放優化 */
-        /* 手機維持預設 (16px)，電腦版 (大於1024px) 基準字體放大至 18px (~112.5%) */
-        @media (min-width: 1024px) {
-            html {
-                font-size: 18px; 
-            }
-        }
+        /* [調整] 移除全域字體強制放大，改回標準，確保排版不跑掉 */
+        /* html { font-size: 16px; } (Default) */
 
         /* [核心] 導覽列防爆設定 - 強制橫向滑動不換行 */
         .nav-scroll-container {
@@ -89,10 +84,10 @@
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
             scrollbar-width: none; /* Firefox */
-            gap: 0.5rem;
+            gap: 0.25rem; /* [調整] 縮小間距確保放得下 */
             height: 100%;
             align-items: center;
-            padding: 0 1rem;
+            padding: 0 0.5rem;
         }
         .nav-scroll-container::-webkit-scrollbar { display: none; } /* Chrome */
         
@@ -154,7 +149,7 @@
         }
     </style>
 </head>
-<body class="bg-gray-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 flex flex-col min-h-screen relative font-sans selection:bg-theme-100 selection:text-theme-800 lg:text-lg">
+<body class="bg-gray-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 flex flex-col min-h-screen relative font-sans selection:bg-theme-100 selection:text-theme-800">
 
     <script>
         window.onerror = function(msg, url, line) {
@@ -178,40 +173,40 @@
 
     <header class="sticky top-0 z-40 glass shadow-sm transition-all duration-300">
         <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16 sm:h-20 lg:h-24 gap-4">
+            <div class="flex items-center justify-between h-16 sm:h-20 gap-4">
                 <a href="#" class="flex-shrink-0 flex items-center gap-3 group" onclick="navigate('home')">
-                    <img src="大頭貼.jpg" onerror="this.src='https://ui-avatars.com/api/?name=PKSH&background=0d9488&color=fff'" alt="Logo" class="w-10 h-10 lg:w-12 lg:h-12 rounded-full object-cover ring-2 ring-slate-100 dark:ring-slate-700 group-hover:ring-theme-400 transition-all">
+                    <img src="大頭貼.jpg" onerror="this.src='https://ui-avatars.com/api/?name=PKSH&background=0d9488&color=fff'" alt="Logo" class="w-10 h-10 rounded-full object-cover ring-2 ring-slate-100 dark:ring-slate-700 group-hover:ring-theme-400 transition-all">
                     <div class="hidden sm:flex flex-col">
-                        <span class="text-lg lg:text-2xl font-bold tracking-tight leading-none text-slate-900 dark:text-white">北港高中<span class="text-theme-500">學生會</span></span>
-                        <span class="text-[10px] lg:text-xs font-semibold text-slate-400 tracking-widest mt-0.5 uppercase">PKSH SU</span>
+                        <span class="text-lg font-bold tracking-tight leading-none text-slate-900 dark:text-white">北港高中<span class="text-theme-500">學生會</span></span>
+                        <span class="text-[10px] font-semibold text-slate-400 tracking-widest mt-0.5 uppercase">PKSH SU</span>
                     </div>
                 </a>
 
                 <div class="hidden xl:flex flex-1 min-w-0 items-center justify-center">
                     <nav class="nav-scroll-container">
-                        <button class="nav-btn px-4 py-2 text-sm lg:text-base lg:px-5 lg:py-2.5 font-medium rounded-full transition-colors" onclick="navigate('home')" data-key="home">首頁</button>
-                        <button class="nav-btn px-4 py-2 text-sm lg:text-base lg:px-5 lg:py-2.5 font-medium rounded-full transition-colors" onclick="navigate('events')" data-key="events">近期活動</button>
-                        <button class="nav-btn px-4 py-2 text-sm lg:text-base lg:px-5 lg:py-2.5 font-medium rounded-full transition-colors" onclick="navigate('gallery')" data-key="gallery">活動花絮</button>
-                        <button class="nav-btn px-4 py-2 text-sm lg:text-base lg:px-5 lg:py-2.5 font-medium rounded-full transition-colors" onclick="navigate('clubs')" data-key="clubs">社團專區</button>
-                        <button class="nav-btn px-4 py-2 text-sm lg:text-base lg:px-5 lg:py-2.5 font-medium rounded-full transition-colors" onclick="navigate('mailboxes')" data-key="mailboxes">信箱專區</button>
-                        <button class="nav-btn px-4 py-2 text-sm lg:text-base lg:px-5 lg:py-2.5 font-medium rounded-full transition-colors" onclick="navigate('downloads')" data-key="downloads">資料下載</button>
-                        <button class="nav-btn px-4 py-2 text-sm lg:text-base lg:px-5 lg:py-2.5 font-medium rounded-full transition-colors" onclick="navigate('finance')" data-key="finance">財務明細</button>
-                        <button class="nav-btn px-4 py-2 text-sm lg:text-base lg:px-5 lg:py-2.5 font-medium rounded-full transition-colors" onclick="navigate('meetings')" data-key="meetings">會議紀錄</button>
-                        <button class="nav-btn px-4 py-2 text-sm lg:text-base lg:px-5 lg:py-2.5 font-medium rounded-full transition-colors" onclick="navigate('org')" data-key="org">組織架構</button>
-                        <button class="nav-btn ml-2 px-5 py-2 lg:px-6 lg:py-3 rounded-full bg-theme-600 text-white text-sm lg:text-base font-bold shadow-md hover:bg-theme-700 hover:shadow-lg transition-all" onclick="navigate('contact')" data-key="contact">聯絡我們</button>
+                        <button class="nav-btn px-3 py-2 text-sm font-bold rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-800" onclick="navigate('home')" data-key="home">首頁</button>
+                        <button class="nav-btn px-3 py-2 text-sm font-bold rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-800" onclick="navigate('events')" data-key="events">近期活動</button>
+                        <button class="nav-btn px-3 py-2 text-sm font-bold rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-800" onclick="navigate('gallery')" data-key="gallery">活動花絮</button>
+                        <button class="nav-btn px-3 py-2 text-sm font-bold rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-800" onclick="navigate('clubs')" data-key="clubs">社團專區</button>
+                        <button class="nav-btn px-3 py-2 text-sm font-bold rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-800" onclick="navigate('mailboxes')" data-key="mailboxes">信箱專區</button>
+                        <button class="nav-btn px-3 py-2 text-sm font-bold rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-800" onclick="navigate('downloads')" data-key="downloads">資料下載</button>
+                        <button class="nav-btn px-3 py-2 text-sm font-bold rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-800" onclick="navigate('finance')" data-key="finance">財務明細</button>
+                        <button class="nav-btn px-3 py-2 text-sm font-bold rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-800" onclick="navigate('meetings')" data-key="meetings">會議紀錄</button>
+                        <button class="nav-btn px-3 py-2 text-sm font-bold rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-800" onclick="navigate('org')" data-key="org">組織架構</button>
+                        <button class="nav-btn ml-1 px-4 py-2 rounded-full bg-theme-600 text-white text-sm font-bold shadow-md hover:bg-theme-700 hover:shadow-lg transition-all" onclick="navigate('contact')" data-key="contact">聯絡我們</button>
                     </nav>
                 </div>
 
                 <div class="flex items-center space-x-2 flex-shrink-0">
                     <button onclick="toggleSearch()" class="p-2 rounded-full text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition">
-                        <i data-lucide="search" class="w-5 h-5 lg:w-6 lg:h-6"></i>
+                        <i data-lucide="search" class="w-5 h-5"></i>
                     </button>
-                    <button onclick="toggleLang()" class="w-8 h-8 lg:w-10 lg:h-10 flex items-center justify-center text-xs lg:text-sm font-bold border border-slate-200 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-300 hover:border-theme-500 hover:text-theme-500 transition">
+                    <button onclick="toggleLang()" class="w-8 h-8 flex items-center justify-center text-xs font-bold border border-slate-200 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-300 hover:border-theme-500 hover:text-theme-500 transition">
                         <span id="lang-display">EN</span>
                     </button>
                     <button onclick="toggleDarkMode()" class="p-2 rounded-full text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition">
-                        <i data-lucide="moon" id="dark-icon" class="w-5 h-5 lg:w-6 lg:h-6"></i>
-                        <i data-lucide="sun" id="light-icon" class="w-5 h-5 lg:w-6 lg:h-6 hidden"></i>
+                        <i data-lucide="moon" id="dark-icon" class="w-5 h-5"></i>
+                        <i data-lucide="sun" id="light-icon" class="w-5 h-5 hidden"></i>
                     </button>
                     <button id="menu-button" class="xl:hidden p-2 text-slate-600 dark:text-slate-200">
                         <i data-lucide="menu" class="w-6 h-6"></i>
@@ -913,7 +908,7 @@
                     <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-72 h-72 bg-blue-400/20 rounded-full blur-3xl animate-float" style="animation-delay: 1s;"></div>
                     
                     <div class="relative z-10 text-center md:text-left max-w-xl">
-                        <h1 class="text-4xl sm:text-5xl lg:text-7xl font-black mb-6 tracking-tight leading-tight drop-shadow-lg">${t('heroTitle')}</h1>
+                        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black mb-6 tracking-tight leading-tight drop-shadow-lg">${t('heroTitle')}</h1>
                         <p class="text-lg sm:text-xl opacity-90 font-medium leading-relaxed max-w-lg">${t('heroSubtitle')}</p>
                         <button class="mt-8 bg-white text-theme-600 font-black py-3.5 px-8 rounded-full hover:bg-gray-50 transition shadow-lg hover:shadow-2xl transform hover:-translate-y-1 active:scale-95 duration-200 flex items-center gap-2 mx-auto md:mx-0 group text-lg">
                             ${t('btnComplaint')} <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i>
