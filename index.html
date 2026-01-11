@@ -159,8 +159,6 @@
             background: rgba(255,255,255,0.3);
             transform: scale(1.05);
         }
-
-        /* [已移除] 全局強制亮色 Icon 的 CSS，恢復原本設計 */
     </style>
 </head>
 <body class="bg-gray-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 flex flex-col min-h-screen relative font-sans selection:bg-theme-100 selection:text-theme-800">
@@ -975,7 +973,7 @@
                     <div class="relative z-10 text-center md:text-left max-w-xl">
                         <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black mb-6 tracking-tight leading-tight drop-shadow-lg">${t('heroTitle')}</h1>
                         <p class="text-lg sm:text-xl opacity-90 font-medium leading-relaxed max-w-lg">${t('heroSubtitle')}</p>
-                        <button class="mt-8 bg-white text-theme-600 font-black py-3.5 px-8 rounded-full hover:bg-gray-50 transition shadow-lg hover:shadow-2xl transform hover:-translate-y-1 active:scale-95 duration-200 flex items-center gap-2 mx-auto md:mx-0 group text-lg">
+                        <button onclick="navigate('mailboxes')" class="mt-8 bg-white text-theme-600 font-black py-3.5 px-8 rounded-full hover:bg-gray-50 transition shadow-lg hover:shadow-2xl transform hover:-translate-y-1 active:scale-95 duration-200 flex items-center gap-2 mx-auto md:mx-0 group text-lg">
                             ${t('btnComplaint')} <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i>
                         </button>
                     </div>
@@ -1006,7 +1004,7 @@
                                     <span class="font-bold text-gray-700 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">🏫 學校官網</span>
                                     <i data-lucide="external-link" class="w-4 h-4 text-gray-400 group-hover:text-blue-500"></i>
                                 </a>
-                                <a href="https://portal.k12.ntut.edu.tw/" target="_blank" class="block p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl hover:bg-green-50 dark:hover:bg-green-900/20 transition flex items-center justify-between group border border-transparent hover:border-green-200 dark:hover:border-green-800">
+                                <a href="https://school.ylc.edu.tw/" target="_blank" class="block p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl hover:bg-green-50 dark:hover:bg-green-900/20 transition flex items-center justify-between group border border-transparent hover:border-green-200 dark:hover:border-green-800">
                                     <span class="font-bold text-gray-700 dark:text-gray-200 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">📊 成績查詢</span>
                                     <i data-lucide="external-link" class="w-4 h-4 text-gray-400 group-hover:text-green-500"></i>
                                 </a>
