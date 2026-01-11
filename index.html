@@ -74,9 +74,6 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        /* [調整] 移除全域字體強制放大，改回標準，確保排版不跑掉 */
-        /* html { font-size: 16px; } (Default) */
-
         /* [核心] 導覽列防爆設定 - 強制橫向滑動不換行 */
         .nav-scroll-container {
             display: flex;
@@ -84,7 +81,7 @@
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
             scrollbar-width: none; /* Firefox */
-            gap: 0.25rem; /* [調整] 縮小間距確保放得下 */
+            gap: 0.25rem;
             height: 100%;
             align-items: center;
             padding: 0 0.5rem;
@@ -167,7 +164,8 @@
     </button>
 
     <div class="relative z-20 bg-slate-900 text-white text-xs py-2.5 px-4 overflow-hidden">
-        <div class="marquee-container flex items-center h-6"> <div class="marquee-content font-mono tracking-wider opacity-90 transition-all duration-300" id="marquee-text">Loading...</div>
+        <div class="marquee-container flex items-center h-6">
+            <div class="marquee-content font-mono tracking-wider opacity-90 transition-all duration-300" id="marquee-text">Loading...</div>
         </div>
     </div>
 
@@ -184,16 +182,16 @@
 
                 <div class="hidden xl:flex flex-1 min-w-0 items-center justify-center">
                     <nav class="nav-scroll-container">
-                        <button class="nav-btn px-5 py-2 text-sm font-bold rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-800" onclick="navigate('home')" data-key="home">首頁</button>
-                        <button class="nav-btn px-5 py-2 text-sm font-bold rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-800" onclick="navigate('events')" data-key="events">近期活動</button>
-                        <button class="nav-btn px-5 py-2 text-sm font-bold rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-800" onclick="navigate('gallery')" data-key="gallery">活動花絮</button>
-                        <button class="nav-btn px-5 py-2 text-sm font-bold rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-800" onclick="navigate('clubs')" data-key="clubs">社團專區</button>
-                        <button class="nav-btn px-5 py-2 text-sm font-bold rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-800" onclick="navigate('mailboxes')" data-key="mailboxes">信箱專區</button>
-                        <button class="nav-btn px-5 py-2 text-sm font-bold rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-800" onclick="navigate('downloads')" data-key="downloads">資料下載</button>
-                        <button class="nav-btn px-5 py-2 text-sm font-bold rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-800" onclick="navigate('finance')" data-key="finance">財務明細</button>
-                        <button class="nav-btn px-5 py-2 text-sm font-bold rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-800" onclick="navigate('meetings')" data-key="meetings">會議紀錄</button>
-                        <button class="nav-btn px-5 py-2 text-sm font-bold rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-800" onclick="navigate('org')" data-key="org">組織架構</button>
-                        <button class="nav-btn ml-1 px-4 py-2 rounded-full bg-theme-600 text-white text-sm font-bold shadow-md hover:bg-theme-700 hover:shadow-lg transition-all" onclick="navigate('contact')" data-key="contact">聯絡我們</button>
+                        <button class="nav-btn px-2.5 py-2 text-base font-bold tracking-tight rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-800" onclick="navigate('home')" data-key="home">首頁</button>
+                        <button class="nav-btn px-2.5 py-2 text-base font-bold tracking-tight rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-800" onclick="navigate('events')" data-key="events">近期活動</button>
+                        <button class="nav-btn px-2.5 py-2 text-base font-bold tracking-tight rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-800" onclick="navigate('gallery')" data-key="gallery">活動花絮</button>
+                        <button class="nav-btn px-2.5 py-2 text-base font-bold tracking-tight rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-800" onclick="navigate('clubs')" data-key="clubs">社團專區</button>
+                        <button class="nav-btn px-2.5 py-2 text-base font-bold tracking-tight rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-800" onclick="navigate('mailboxes')" data-key="mailboxes">信箱專區</button>
+                        <button class="nav-btn px-2.5 py-2 text-base font-bold tracking-tight rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-800" onclick="navigate('downloads')" data-key="downloads">資料下載</button>
+                        <button class="nav-btn px-2.5 py-2 text-base font-bold tracking-tight rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-800" onclick="navigate('finance')" data-key="finance">財務明細</button>
+                        <button class="nav-btn px-2.5 py-2 text-base font-bold tracking-tight rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-800" onclick="navigate('meetings')" data-key="meetings">會議紀錄</button>
+                        <button class="nav-btn px-2.5 py-2 text-base font-bold tracking-tight rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-800" onclick="navigate('org')" data-key="org">組織架構</button>
+                        <button class="nav-btn ml-1 px-4 py-2 rounded-full bg-theme-600 text-white text-base font-bold shadow-md hover:bg-theme-700 hover:shadow-lg transition-all" onclick="navigate('contact')" data-key="contact">聯絡我們</button>
                     </nav>
                 </div>
 
@@ -632,15 +630,14 @@
 
         window.addFinance = async () => {
             const date = document.getElementById('fin-date').value;
-            const item_zh = document.getElementById('fin-item-zh').value;
-            const item_en = document.getElementById('fin-item-en').value;
+            const item = document.getElementById('fin-item').value;
             let amount = parseInt(document.getElementById('fin-amount').value);
             const type = document.getElementById('fin-type').value;
-            if(!date || !item_zh || !amount) return Swal.fire('資料不全', '', 'warning');
+            if(!date || !item || !amount) return Swal.fire('資料不全', '', 'warning');
             if (type === 'Out') amount = -Math.abs(amount); else amount = Math.abs(amount);
             try {
                 await addDoc(collection(db, "finance"), {
-                    date, item_zh, item_en: item_en || item_zh, amount, type, timestamp: serverTimestamp()
+                    date, item_zh: item, item_en: item, amount, type, timestamp: serverTimestamp()
                 });
                 Swal.fire('已新增財務', '', 'success'); await loadDataFromFirebase(); render(); 
             } catch(e) { Swal.fire('錯誤', e.message, 'error');
@@ -649,13 +646,12 @@
 
         window.addMeeting = async () => {
             const date = document.getElementById('mt-date').value;
-            const title_zh = document.getElementById('mt-title-zh').value;
-            const title_en = document.getElementById('mt-title-en').value;
+            const title = document.getElementById('mt-title').value;
             const link = document.getElementById('mt-link').value; 
-            if(!date || !title_zh) return Swal.fire('資料不全', '', 'warning');
+            if(!date || !title) return Swal.fire('資料不全', '', 'warning');
             try {
                 await addDoc(collection(db, "meetings"), {
-                    date, title_zh, title_en: title_en || title_zh, file: link || '#', timestamp: serverTimestamp()
+                    date, title_zh: title, title_en: title, file: link || '#', timestamp: serverTimestamp()
                 });
                 Swal.fire('已新增會議記錄', '', 'success'); await loadDataFromFirebase(); render();
             } catch(e) { Swal.fire('錯誤', e.message, 'error');
@@ -664,14 +660,13 @@
 
         window.addDownload = async () => {
             const date = document.getElementById('dl-date').value;
-            const title_zh = document.getElementById('dl-title-zh').value;
-            const title_en = document.getElementById('dl-title-en').value;
+            const title = document.getElementById('dl-title').value;
             const link = document.getElementById('dl-link').value;
             const type = document.getElementById('dl-type').value;
-            if(!date || !title_zh || !link) return Swal.fire('資料不全', '', 'warning');
+            if(!date || !title || !link) return Swal.fire('資料不全', '', 'warning');
             try {
                 await addDoc(collection(db, "downloads"), {
-                    date, title_zh, title_en: title_en || title_zh, file: link, type, timestamp: serverTimestamp()
+                    date, title_zh: title, title_en: title, file: link, type, timestamp: serverTimestamp()
                 });
                 Swal.fire('已新增下載', '', 'success'); await loadDataFromFirebase(); render();
             } catch(e) { Swal.fire('錯誤', e.message, 'error');
@@ -793,23 +788,18 @@
         };
 
         // --- Lightbox with Navigation ---
-        window.openLightbox = (index, photoList = null) => {
-            if (!photoList) {
-                // If specific list not provided, assume all photos
-                 APP_STATE.lightboxList = APP_DATA.photos;
+        // [FIXED] Updated openLightbox to fetch list dynamically based on view state
+        window.openLightbox = (index) => {
+            // Determine the list based on current view
+            if (APP_STATE.galleryView === 'photos' && APP_STATE.activeAlbum) {
+                APP_STATE.lightboxList = APP_DATA.photos.filter(p => (p.album || '未分類') === APP_STATE.activeAlbum);
             } else {
-                APP_STATE.lightboxList = photoList;
+                // Fallback or other views (e.g. latest photos on home)
+                APP_STATE.lightboxList = APP_DATA.photos;
             }
             
-            // Find index if passed as URL string (legacy support) or use direct index
-            if (typeof index === 'string') {
-                 APP_STATE.lightboxIndex = APP_STATE.lightboxList.findIndex(p => p.url === index);
-            } else {
-                 APP_STATE.lightboxIndex = index;
-            }
-
-            if(APP_STATE.lightboxIndex === -1) APP_STATE.lightboxIndex = 0;
-
+            APP_STATE.lightboxIndex = index;
+            
             updateLightboxContent();
             
             const modal = document.getElementById('lightbox-modal');
@@ -1006,9 +996,9 @@
                 const currentAlbumName = APP_STATE.activeAlbum;
                 const albumPhotos = photos.filter(p => (p.album || '未分類') === currentAlbumName);
                 
-                // Keep global references for lightbox to work within this context
+                // [FIXED] onclick now just passes index, openLightbox handles the rest
                 const photoHtml = albumPhotos.map((p, idx) => `
-                    <div class="break-inside-avoid mb-6 cursor-zoom-in group relative overflow-hidden rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700" onclick="openLightbox(${idx}, APP_DATA.photos.filter(p => (p.album || '未分類') === '${currentAlbumName}'))">
+                    <div class="break-inside-avoid mb-6 cursor-zoom-in group relative overflow-hidden rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700" onclick="openLightbox(${idx})">
                         <img src="${p.url}" alt="${val(p, 'title')}" class="w-full h-auto object-cover transform group-hover:scale-105 transition duration-700 ease-out">
                         <div class="gallery-overlay absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-300 flex items-end p-6">
                             <p class="text-white font-bold text-lg transform translate-y-4 group-hover:translate-y-0 transition duration-300">${val(p, 'title')}</p>
@@ -1634,7 +1624,7 @@
 
         window.navigate = (view) => {
             APP_STATE.view = view;
-            APP_STATE.eventFilter = 'All'; 
+            APP_STATE.eventFilter = 'All';
             APP_STATE.galleryView = 'albums'; // Reset gallery view
             document.getElementById('mobile-menu').classList.add('hidden');
             render();
