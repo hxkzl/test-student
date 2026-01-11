@@ -639,59 +639,105 @@
             const title_en = document.getElementById('event-title-en').value;
             const date = document.getElementById('event-date').value;
             const time = document.getElementById('event-time').value;
-            const loc = document.getElementById('event-loc').value;
+            // [修正] 取得兩個分開的地點欄位
+            const loc_zh = document.getElementById('event-loc-zh').value;
+            const loc_en = document.getElementById('event-loc-en').value;
             const type = document.getElementById('event-type').value;
             const link = document.getElementById('event-link').value;
+            
             if(!title_zh || !date) return Swal.fire('欄位未填', '請填寫完整資訊', 'warning');
+            
             try {
                 await addDoc(collection(db, "events"), {
-                    title_zh, title_en: title_en || title_zh, date, time, location_zh: loc, location_en: loc,
-                    type, link: link || '', timestamp: serverTimestamp()
+                    title_zh, 
+                    title_en: title_en || title_zh, 
+                    date, 
+                    time, 
+                    location_zh: loc_zh, 
+                    // [修正] 如果沒填英文地點，就預設用中文
+                    location_en: loc_en || loc_zh,
+                    type, 
+                    link: link || '', 
+                    timestamp: serverTimestamp()
                 });
                 Swal.fire('新增成功', '', 'success'); await loadDataFromFirebase();
             } catch(e) { Swal.fire('錯誤', e.message, 'error');
             }
         }
 
+        // [FIXED] addFinance Function to match new HTML IDs
         window.addFinance = async () => {
             const date = document.getElementById('fin-date').value;
-            const item = document.getElementById('fin-item').value;
+            // [修正] 改為讀取 fin-item-zh 和 fin-item-en
+            const item_zh = document.getElementById('fin-item-zh').value;
+            const item_en = document.getElementById('fin-item-en').value;
             let amount = parseInt(document.getElementById('fin-amount').value);
             const type = document.getElementById('fin-type').value;
-            if(!date || !item || !amount) return Swal.fire('資料不全', '', 'warning');
+            
+            // [修正] 檢查欄位變數名稱
+            if(!date || !item_zh || !amount) return Swal.fire('資料不全', '', 'warning');
+            
             if (type === 'Out') amount = -Math.abs(amount); else amount = Math.abs(amount);
+            
             try {
                 await addDoc(collection(db, "finance"), {
-                    date, item_zh: item, item_en: item, amount, type, timestamp: serverTimestamp()
+                    date, 
+                    item_zh, 
+                    // [修正] 英文沒填則使用中文
+                    item_en: item_en || item_zh, 
+                    amount, 
+                    type, 
+                    timestamp: serverTimestamp()
                 });
                 Swal.fire('已新增財務', '', 'success'); await loadDataFromFirebase(); render(); 
             } catch(e) { Swal.fire('錯誤', e.message, 'error');
             }
         }
 
+        // [FIXED] addMeeting Function to match new HTML IDs
         window.addMeeting = async () => {
             const date = document.getElementById('mt-date').value;
-            const title = document.getElementById('mt-title').value;
+            // [修正] 改為讀取 mt-title-zh 和 mt-title-en
+            const title_zh = document.getElementById('mt-title-zh').value;
+            const title_en = document.getElementById('mt-title-en').value;
             const link = document.getElementById('mt-link').value; 
-            if(!date || !title) return Swal.fire('資料不全', '', 'warning');
+            
+            if(!date || !title_zh) return Swal.fire('資料不全', '', 'warning');
+            
             try {
                 await addDoc(collection(db, "meetings"), {
-                    date, title_zh: title, title_en: title, file: link || '#', timestamp: serverTimestamp()
+                    date, 
+                    title_zh, 
+                    // [修正] 英文沒填則使用中文
+                    title_en: title_en || title_zh, 
+                    file: link || '#', 
+                    timestamp: serverTimestamp()
                 });
                 Swal.fire('已新增會議記錄', '', 'success'); await loadDataFromFirebase(); render();
             } catch(e) { Swal.fire('錯誤', e.message, 'error');
             }
         }
 
+        // [FIXED] addDownload Function to match new HTML IDs
         window.addDownload = async () => {
             const date = document.getElementById('dl-date').value;
-            const title = document.getElementById('dl-title').value;
+            // [修正] 改為讀取 dl-title-zh 和 dl-title-en
+            const title_zh = document.getElementById('dl-title-zh').value;
+            const title_en = document.getElementById('dl-title-en').value;
             const link = document.getElementById('dl-link').value;
             const type = document.getElementById('dl-type').value;
-            if(!date || !title || !link) return Swal.fire('資料不全', '', 'warning');
+            
+            if(!date || !title_zh || !link) return Swal.fire('資料不全', '', 'warning');
+            
             try {
                 await addDoc(collection(db, "downloads"), {
-                    date, title_zh: title, title_en: title, file: link, type, timestamp: serverTimestamp()
+                    date, 
+                    title_zh, 
+                    // [修正] 英文沒填則使用中文
+                    title_en: title_en || title_zh, 
+                    file: link, 
+                    type, 
+                    timestamp: serverTimestamp()
                 });
                 Swal.fire('已新增下載', '', 'success'); await loadDataFromFirebase(); render();
             } catch(e) { Swal.fire('錯誤', e.message, 'error');
@@ -1114,7 +1160,7 @@
                 <div class="flex items-center bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-md mb-5 border-l-[6px] ${ev.type === 'Holiday' ? 'border-red-500' : ev.type === 'Academic' ? 'border-blue-500' : 'border-theme-500'} hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
                     <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-xl text-center min-w-[90px] border border-gray-100 dark:border-gray-600 group-hover:border-theme-200 transition-colors">
                         <span class="block text-2xl font-black text-gray-800 dark:text-white">${day}</span>
-                        <span class="block text-xs font-bold text-gray-500 uppercase mt-1">${month}月</span>
+                        <span class="block text-xs font-bold text-gray-500 uppercase mt-1">${month}${isEn() ? '' : '月'}</span>
                     </div>
                     <div class="ml-6 flex-grow">
                         <div class="flex justify-between items-start">
@@ -1128,7 +1174,7 @@
                         </p>
                         ${ev.link ? `
                             <a href="${ev.link}" target="_blank" class="inline-flex items-center mt-3 text-sm text-theme-600 dark:text-theme-400 font-bold hover:underline decoration-2 underline-offset-2">
-                                相關連結/報名 <i data-lucide="external-link" class="w-3.5 h-3.5 ml-1"></i>
+                                ${isEn() ? 'Link / Sign up' : '相關連結/報名'} <i data-lucide="external-link" class="w-3.5 h-3.5 ml-1"></i>
                             </a>
                         ` : ''}
                     </div>
@@ -1449,7 +1495,12 @@
                                         <div class="w-1/2"><label class="${labelStyle}">日期</label><input id="event-date" type="date" class="${inputStyle}"></div>
                                         <div class="w-1/2"><label class="${labelStyle}">時間</label><input id="event-time" class="${inputStyle}" placeholder="ex: 08:00"></div>
                                     </div>
-                                    <div><label class="${labelStyle}">地點</label><input id="event-loc" class="${inputStyle}"></div>
+                                    <div><label class="${labelStyle}">地點</label><input id="event-loc-zh" class="${inputStyle}"></div>
+                                    <div class="flex gap-2 items-end">
+                                         <div class="flex-grow"><label class="${labelStyle}">English Location</label><input id="event-loc-en" class="${inputStyle}"></div>
+                                         <button onclick="autoTranslate('event-loc-zh', 'event-loc-en')" class="h-[50px] px-4 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition"><i data-lucide="languages"></i></button>
+                                    </div>
+
                                     <div><label class="${labelStyle}">連結 (選填)</label><input id="event-link" class="${inputStyle}" placeholder="https://..."></div>
                                     <div><label class="${labelStyle}">類型</label><select id="event-type" class="${inputStyle}"><option value="Activity">Activity (活動)</option><option value="Academic">Academic (教務)</option><option value="Holiday">Holiday (假日)</option></select></div>
                                     <button onclick="addEvent()" class="${btnStyle} mt-2 w-full">發布活動</button>
@@ -1697,7 +1748,7 @@
 
         window.navigate = (view) => {
             APP_STATE.view = view;
-            APP_STATE.eventFilter = 'All';
+            APP_STATE.eventFilter = 'All'; 
             APP_STATE.galleryView = 'albums'; // Reset gallery view
             document.getElementById('mobile-menu').classList.add('hidden');
             render();
