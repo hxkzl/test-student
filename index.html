@@ -13,7 +13,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
-            darkMode: 'class', // [已恢復] 啟用深色模式切換
+            darkMode: 'class',
             theme: {
                 fontFamily: {
                     sans: ['"Inter"', '"Noto Sans TC"', 'sans-serif'],
@@ -470,6 +470,16 @@
                     if (parts.length === 3) { month = parts[1]; day = parts[2]; } else { month = parts[0]; day = parts[1]; }
                 }
             } catch (e) { console.error("Date parse error", e); }
+            
+            // [新增] 英文月份對照表
+            if (isEn()) {
+                const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                const monthIndex = parseInt(month) - 1;
+                if (monthIndex >= 0 && monthIndex < 12) {
+                    month = monthNames[monthIndex];
+                }
+            }
+            
             return { month, day };
         }
 
@@ -638,8 +648,11 @@
             const title_zh = document.getElementById('event-title-zh').value;
             const title_en = document.getElementById('event-title-en').value;
             const date = document.getElementById('event-date').value;
-            const time = document.getElementById('event-time').value;
-            // [修正] 取得兩個分開的地點欄位
+            
+            // [新增] 雙語時間欄位讀取
+            const time_zh = document.getElementById('event-time-zh').value;
+            const time_en = document.getElementById('event-time-en').value;
+
             const loc_zh = document.getElementById('event-loc-zh').value;
             const loc_en = document.getElementById('event-loc-en').value;
             const type = document.getElementById('event-type').value;
@@ -652,9 +665,12 @@
                     title_zh, 
                     title_en: title_en || title_zh, 
                     date, 
-                    time, 
+                    // [修改] 儲存時間為字串 (如果想用雙語，可以改存物件，但為了相容性這裡存中文，顯示時處理)
+                    // 更好的做法是存 time_zh, time_en
+                    time: time_zh, 
+                    time_zh: time_zh,
+                    time_en: time_en || time_zh,
                     location_zh: loc_zh, 
-                    // [修正] 如果沒填英文地點，就預設用中文
                     location_en: loc_en || loc_zh,
                     type, 
                     link: link || '', 
@@ -1050,7 +1066,7 @@
                                     <span class="font-bold text-gray-700 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">🏫 學校官網</span>
                                     <i data-lucide="external-link" class="w-4 h-4 text-gray-400 group-hover:text-blue-500"></i>
                                 </a>
-                                <a href="https://portal.k12.ntut.edu.tw/" target="_blank" class="block p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl hover:bg-green-50 dark:hover:bg-green-900/20 transition flex items-center justify-between group border border-transparent hover:border-green-200 dark:hover:border-green-800">
+                                <a href="https://school.ylc.edu.tw/" target="_blank" class="block p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl hover:bg-green-50 dark:hover:bg-green-900/20 transition flex items-center justify-between group border border-transparent hover:border-green-200 dark:hover:border-green-800">
                                     <span class="font-bold text-gray-700 dark:text-gray-200 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">📊 成績查詢</span>
                                     <i data-lucide="external-link" class="w-4 h-4 text-gray-400 group-hover:text-green-500"></i>
                                 </a>
@@ -1170,7 +1186,7 @@
                         <p class="text-sm text-gray-500 font-medium flex items-center gap-2 mt-2">
                             <span class="flex items-center"><i data-lucide="map-pin" class="w-3.5 h-3.5 mr-1"></i> ${val(ev, 'location')}</span>
                             <span class="w-1 h-1 bg-gray-300 rounded-full"></span>
-                            <span class="flex items-center"><i data-lucide="clock" class="w-3.5 h-3.5 mr-1"></i> ${ev.time}</span>
+                            <span class="flex items-center"><i data-lucide="clock" class="w-3.5 h-3.5 mr-1"></i> ${val(ev, 'time')}</span>
                         </p>
                         ${ev.link ? `
                             <a href="${ev.link}" target="_blank" class="inline-flex items-center mt-3 text-sm text-theme-600 dark:text-theme-400 font-bold hover:underline decoration-2 underline-offset-2">
@@ -1495,10 +1511,16 @@
                                         <div class="w-1/2"><label class="${labelStyle}">日期</label><input id="event-date" type="date" class="${inputStyle}"></div>
                                         <div class="w-1/2"><label class="${labelStyle}">時間</label><input id="event-time" class="${inputStyle}" placeholder="ex: 08:00"></div>
                                     </div>
-                                    <div><label class="${labelStyle}">地點</label><input id="event-loc-zh" class="${inputStyle}"></div>
+                                    <div><label class="${labelStyle}">中文地點</label><input id="event-loc-zh" class="${inputStyle}"></div>
                                     <div class="flex gap-2 items-end">
                                          <div class="flex-grow"><label class="${labelStyle}">English Location</label><input id="event-loc-en" class="${inputStyle}"></div>
                                          <button onclick="autoTranslate('event-loc-zh', 'event-loc-en')" class="h-[50px] px-4 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition"><i data-lucide="languages"></i></button>
+                                    </div>
+
+                                    <div><label class="${labelStyle}">中文時間/備註</label><input id="event-time-zh" class="${inputStyle}" placeholder="08:00 或 依公告時間"></div>
+                                    <div class="flex gap-2 items-end">
+                                         <div class="flex-grow"><label class="${labelStyle}">English Time/Note</label><input id="event-time-en" class="${inputStyle}"></div>
+                                         <button onclick="autoTranslate('event-time-zh', 'event-time-en')" class="h-[50px] px-4 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition"><i data-lucide="languages"></i></button>
                                     </div>
 
                                     <div><label class="${labelStyle}">連結 (選填)</label><input id="event-link" class="${inputStyle}" placeholder="https://..."></div>
@@ -1748,7 +1770,7 @@
 
         window.navigate = (view) => {
             APP_STATE.view = view;
-            APP_STATE.eventFilter = 'All'; 
+            APP_STATE.eventFilter = 'All';
             APP_STATE.galleryView = 'albums'; // Reset gallery view
             document.getElementById('mobile-menu').classList.add('hidden');
             render();
