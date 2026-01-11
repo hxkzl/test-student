@@ -13,7 +13,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
-            darkMode: 'class', // [已恢復] 啟用深色模式偵測
+            darkMode: 'class', // [已恢復] 啟用深色模式切換
             theme: {
                 fontFamily: {
                     sans: ['"Inter"', '"Noto Sans TC"', 'sans-serif'],
@@ -160,7 +160,7 @@
             transform: scale(1.05);
         }
 
-        /* [已移除] 之前強制所有 Lucide Icon 變色的 CSS 區塊已刪除，讓其他 Icon 恢復正常 */
+        /* [已移除] 全局強制亮色 Icon 的 CSS，恢復原本設計 */
     </style>
 </head>
 <body class="bg-gray-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 flex flex-col min-h-screen relative font-sans selection:bg-theme-100 selection:text-theme-800">
@@ -232,15 +232,15 @@
         
         <div id="mobile-menu" class="xl:hidden hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-100 dark:border-slate-800 absolute w-full z-40 shadow-2xl animate-fade-in">
             <div class="p-4 space-y-1 max-h-[80vh] overflow-y-auto">
-                <button class="block w-full text-left py-3 px-4 rounded-xl font-medium hover:bg-slate-50 dark:hover:bg-slate-800" onclick="navigate('home')" data-key="home">首頁</button>
-                <button class="block w-full text-left py-3 px-4 rounded-xl font-medium hover:bg-slate-50 dark:hover:bg-slate-800" onclick="navigate('events')" data-key="events">近期活動</button>
-                <button class="block w-full text-left py-3 px-4 rounded-xl font-medium hover:bg-slate-50 dark:hover:bg-slate-800" onclick="navigate('gallery')" data-key="gallery">活動花絮</button>
-                <button class="block w-full text-left py-3 px-4 rounded-xl font-medium hover:bg-slate-50 dark:hover:bg-slate-800" onclick="navigate('clubs')" data-key="clubs">社團專區</button>
-                <button class="block w-full text-left py-3 px-4 rounded-xl font-medium hover:bg-slate-50 dark:hover:bg-slate-800" onclick="navigate('mailboxes')" data-key="mailboxes">信箱專區</button>
-                <button class="block w-full text-left py-3 px-4 rounded-xl font-medium hover:bg-slate-50 dark:hover:bg-slate-800" onclick="navigate('downloads')" data-key="downloads">資料下載</button>
-                <button class="block w-full text-left py-3 px-4 rounded-xl font-medium hover:bg-slate-50 dark:hover:bg-slate-800" onclick="navigate('finance')" data-key="finance">財務明細</button>
-                <button class="block w-full text-left py-3 px-4 rounded-xl font-medium hover:bg-slate-50 dark:hover:bg-slate-800" onclick="navigate('meetings')" data-key="meetings">會議紀錄</button>
-                <button class="block w-full text-left py-3 px-4 rounded-xl font-medium hover:bg-slate-50 dark:hover:bg-slate-800" onclick="navigate('org')" data-key="org">組織架構</button>
+                <button class="block w-full text-left py-3 px-4 rounded-xl font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800" onclick="navigate('home')" data-key="home">首頁</button>
+                <button class="block w-full text-left py-3 px-4 rounded-xl font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800" onclick="navigate('events')" data-key="events">近期活動</button>
+                <button class="block w-full text-left py-3 px-4 rounded-xl font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800" onclick="navigate('gallery')" data-key="gallery">活動花絮</button>
+                <button class="block w-full text-left py-3 px-4 rounded-xl font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800" onclick="navigate('clubs')" data-key="clubs">社團專區</button>
+                <button class="block w-full text-left py-3 px-4 rounded-xl font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800" onclick="navigate('mailboxes')" data-key="mailboxes">信箱專區</button>
+                <button class="block w-full text-left py-3 px-4 rounded-xl font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800" onclick="navigate('downloads')" data-key="downloads">資料下載</button>
+                <button class="block w-full text-left py-3 px-4 rounded-xl font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800" onclick="navigate('finance')" data-key="finance">財務明細</button>
+                <button class="block w-full text-left py-3 px-4 rounded-xl font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800" onclick="navigate('meetings')" data-key="meetings">會議紀錄</button>
+                <button class="block w-full text-left py-3 px-4 rounded-xl font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800" onclick="navigate('org')" data-key="org">組織架構</button>
                 <button class="block w-full text-left py-3 px-4 rounded-xl font-bold text-theme-600 bg-theme-50 dark:bg-theme-900/20" onclick="navigate('contact')" data-key="contact">聯絡我們</button>
             </div>
         </div>
@@ -657,15 +657,14 @@
 
         window.addFinance = async () => {
             const date = document.getElementById('fin-date').value;
-            const item_zh = document.getElementById('fin-item-zh').value;
-            const item_en = document.getElementById('fin-item-en').value;
+            const item = document.getElementById('fin-item').value;
             let amount = parseInt(document.getElementById('fin-amount').value);
             const type = document.getElementById('fin-type').value;
-            if(!date || !item_zh || !amount) return Swal.fire('資料不全', '', 'warning');
+            if(!date || !item || !amount) return Swal.fire('資料不全', '', 'warning');
             if (type === 'Out') amount = -Math.abs(amount); else amount = Math.abs(amount);
             try {
                 await addDoc(collection(db, "finance"), {
-                    date, item_zh, item_en: item_en || item_zh, amount, type, timestamp: serverTimestamp()
+                    date, item_zh: item, item_en: item, amount, type, timestamp: serverTimestamp()
                 });
                 Swal.fire('已新增財務', '', 'success'); await loadDataFromFirebase(); render(); 
             } catch(e) { Swal.fire('錯誤', e.message, 'error');
@@ -674,13 +673,12 @@
 
         window.addMeeting = async () => {
             const date = document.getElementById('mt-date').value;
-            const title_zh = document.getElementById('mt-title-zh').value;
-            const title_en = document.getElementById('mt-title-en').value;
+            const title = document.getElementById('mt-title').value;
             const link = document.getElementById('mt-link').value; 
-            if(!date || !title_zh) return Swal.fire('資料不全', '', 'warning');
+            if(!date || !title) return Swal.fire('資料不全', '', 'warning');
             try {
                 await addDoc(collection(db, "meetings"), {
-                    date, title_zh, title_en: title_en || title_zh, file: link || '#', timestamp: serverTimestamp()
+                    date, title_zh: title, title_en: title, file: link || '#', timestamp: serverTimestamp()
                 });
                 Swal.fire('已新增會議記錄', '', 'success'); await loadDataFromFirebase(); render();
             } catch(e) { Swal.fire('錯誤', e.message, 'error');
@@ -689,14 +687,13 @@
 
         window.addDownload = async () => {
             const date = document.getElementById('dl-date').value;
-            const title_zh = document.getElementById('dl-title-zh').value;
-            const title_en = document.getElementById('dl-title-en').value;
+            const title = document.getElementById('dl-title').value;
             const link = document.getElementById('dl-link').value;
             const type = document.getElementById('dl-type').value;
-            if(!date || !title_zh || !link) return Swal.fire('資料不全', '', 'warning');
+            if(!date || !title || !link) return Swal.fire('資料不全', '', 'warning');
             try {
                 await addDoc(collection(db, "downloads"), {
-                    date, title_zh, title_en: title_en || title_zh, file: link, type, timestamp: serverTimestamp()
+                    date, title_zh: title, title_en: title, file: link, type, timestamp: serverTimestamp()
                 });
                 Swal.fire('已新增下載', '', 'success'); await loadDataFromFirebase(); render();
             } catch(e) { Swal.fire('錯誤', e.message, 'error');
