@@ -128,7 +128,6 @@
     <script>
         window.onerror = function(msg, url, line) {
             if (msg.includes('ResizeObserver')) return;
-            // console.error("Error:", msg);
         };
     </script>
 
@@ -141,9 +140,14 @@
         <i data-lucide="arrow-up" class="w-6 h-6 group-hover:-translate-y-0.5 transition-transform"></i>
     </button>
 
-    <div class="relative z-20 bg-slate-900 text-white text-xs py-2.5 px-4 overflow-hidden">
-        <div class="marquee-container flex items-center h-5">
-            <div class="marquee-content font-mono tracking-wider opacity-90" id="marquee-text">Loading...</div>
+    <div class="relative z-20 bg-slate-900 text-white py-2 px-4 overflow-hidden border-b border-white/10">
+        <div class="max-w-[1400px] mx-auto flex items-center justify-between gap-4">
+            <div class="marquee-container flex-grow overflow-hidden min-h-[1.5rem] flex items-center">
+                <div class="marquee-content font-mono tracking-wider opacity-90 text-xs transition-all duration-300" id="marquee-text">Loading...</div>
+            </div>
+            <button onclick="toggleMarqueeSize()" class="flex-shrink-0 text-[10px] font-bold border border-white/30 rounded px-1.5 py-0.5 hover:bg-white hover:text-slate-900 transition-colors" title="切換跑馬燈字體大小">
+                AA
+            </button>
         </div>
     </div>
 
@@ -218,13 +222,23 @@
         <div id="search-results" class="w-full max-w-2xl mt-4 space-y-2 overflow-y-auto max-h-[60vh] pb-10"></div>
     </div>
 
-    <div id="lightbox-modal" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md hidden flex items-center justify-center p-4 transition-opacity duration-300 opacity-0 pointer-events-none" onclick="closeLightbox()">
-        <button onclick="closeLightbox()" class="absolute top-6 right-6 text-white/70 hover:text-white z-50 transition-colors bg-white/10 p-2 rounded-full">
+    <div id="lightbox-modal" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md hidden flex items-center justify-center p-4 transition-opacity duration-300 opacity-0 pointer-events-none select-none" onclick="closeLightbox()">
+        <button onclick="closeLightbox()" class="absolute top-6 right-6 text-white/70 hover:text-white z-50 transition-colors bg-white/10 p-2 rounded-full hover:bg-white/20">
             <i data-lucide="x" class="w-8 h-8"></i>
         </button>
-        <div class="max-w-6xl w-full max-h-screen flex flex-col items-center justify-center">
-            <img id="lightbox-img" src="" class="max-h-[85vh] max-w-full object-contain rounded-lg shadow-2xl transform scale-95 transition-transform duration-300" onclick="event.stopPropagation()">
+        
+        <button onclick="event.stopPropagation(); switchLightbox(-1)" class="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 text-white/70 hover:text-white z-50 transition-all bg-black/20 hover:bg-black/50 p-3 sm:p-4 rounded-full">
+            <i data-lucide="chevron-left" class="w-8 h-8"></i>
+        </button>
+
+        <button onclick="event.stopPropagation(); switchLightbox(1)" class="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 text-white/70 hover:text-white z-50 transition-all bg-black/20 hover:bg-black/50 p-3 sm:p-4 rounded-full">
+            <i data-lucide="chevron-right" class="w-8 h-8"></i>
+        </button>
+
+        <div class="max-w-6xl w-full max-h-screen flex flex-col items-center justify-center relative z-10 px-10">
+            <img id="lightbox-img" src="" class="max-h-[80vh] max-w-full object-contain rounded-lg shadow-2xl transform scale-95 transition-transform duration-300" onclick="event.stopPropagation()">
             <p id="lightbox-caption" class="text-white/90 mt-4 text-center text-lg font-medium tracking-wide"></p>
+            <p id="lightbox-counter" class="text-white/50 mt-1 text-sm font-mono"></p>
         </div>
     </div>
 
@@ -313,26 +327,24 @@
                 { name_zh: '童軍社', name_en: 'Scout Club', category: 'Service', emoji: '🏕️', ig: 'https://www.instagram.com/pksh_circus_scout/' },
             ],
             orgLeaders: [
-                { roleKey: 'role_pres', icon: '👑', name_zh: '張佾傑', name_en: 'CHANG, YI-CHIEH', desc_zh: '對內綜理內務，主持召開會員代表大會，對外代表本會，配合學校推展各項活動並負責綜理本會事宜。', desc_en: 'Manages internal affairs.' },
-                { roleKey: 'role_vp', icon: '⭐', name_zh: '王雅琝', name_en: 'WANG, YA-WEN', desc_zh: '協助會長執行本會事宜，會長因故缺席時代理之。', desc_en: 'Assists the President.' }
+                { roleKey: 'role_pres', icon: '👑', name_zh: '張佾傑', name_en: 'CHANG, YI-CHIEH', desc_zh: '對內綜理內務，主持召開會員代表大會，對外代表本會，配合學校推展各項活動並負責綜理本會事宜。', desc_en: 'Manages internal affairs.'},
+                { roleKey: 'role_vp', icon: '⭐', name_zh: '王雅琝', name_en: 'WANG, YA-WEN', desc_zh: '協助會長執行本會事宜，會長因故缺席時代理之。', desc_en: 'Assists the President.'}
             ],
             orgDepts: [
-                { roleKey: 'role_act', icon: '🎉', chief_zh: '鄭雨涵', chief_en: 'CHENG, YU-HAN', desc_zh: '負責策劃及推行本會所舉辦之各類活動。', desc_en: 'Activities planning.' },
-                { roleKey: 'role_art', icon: '🎨', chief_zh: '朱守晴', chief_en: 'CHU, SHOU-CHING', deputy_zh: '黃瓊美', deputy_en: 'HUANG, CHIUNG-MEI', desc_zh: '負責本會學藝活動、海報、壁報設計。', desc_en: 'Art and Design.' },
-                { roleKey: 'role_admin', icon: '📝', chief_zh: '蔡秉宏', chief_en: 'TSAI, PING-HUNG', deputy_zh: '顏子䒟', deputy_en: 'YEN, TZU-TAN', desc_zh: '負責本會開會通告、會議記錄。', desc_en: 'Administration.' },
-                { roleKey: 'role_ga', icon: '💰', chief_zh: '趙芝翊', chief_en: 'CHAO, CHIH-YI', desc_zh: '負責本會經費收支，財產保管。', desc_en: 'General Affairs.' },
-                { roleKey: 'role_pr', icon: '📢', chief_zh: '許雅琳', chief_en: 'HSU, YA-LIN', desc_zh: '負責本會會議之聯絡及舉辦活動之聯繫。', desc_en: 'Public Relations.' },
-                { roleKey: 'role_mobile', icon: '🛠️', chief_zh: '劉乙葭', chief_en: 'LIU, YI-CHIA', desc_zh: '負責本會舉辦之場地佈置。', desc_en: 'Logistics.' }
+                { roleKey: 'role_act', icon: '🎉', chief_zh: '鄭雨涵', chief_en: 'CHENG, YU-HAN', desc_zh: '負責策劃及推行本會所舉辦之各類活動。', desc_en: 'Activities planning.'},
+                { roleKey: 'role_art', icon: '🎨', chief_zh: '朱守晴', chief_en: 'CHU, SHOU-CHING', deputy_zh: '黃瓊美', deputy_en: 'HUANG, CHIUNG-MEI', desc_zh: '負責本會學藝活動、海報、壁報設計。', desc_en: 'Art and Design.'},
+                { roleKey: 'role_admin', icon: '📝', chief_zh: '蔡秉宏', chief_en: 'TSAI, PING-HUNG', deputy_zh: '顏子䒟', deputy_en: 'YEN, TZU-TAN', desc_zh: '負責本會開會通告、會議記錄。', desc_en: 'Administration.'},
+                { roleKey: 'role_ga', icon: '💰', chief_zh: '趙芝翊', chief_en: 'CHAO, CHIH-YI', desc_zh: '負責本會經費收支，財產保管。', desc_en: 'General Affairs.'},
+                { roleKey: 'role_pr', icon: '📢', chief_zh: '許雅琳', chief_en: 'HSU, YA-LIN', desc_zh: '負責本會會議之聯絡及舉辦活動之聯繫。', desc_en: 'Public Relations.'},
+                { roleKey: 'role_mobile', icon: '🛠️', chief_zh: '劉乙葭', chief_en: 'LIU, YI-CHIA', desc_zh: '負責本會舉辦之場地佈置。', desc_en: 'Logistics.'}
             ],
             meetings: [],
             downloads: []
         };
-
         let APP_DATA = JSON.parse(JSON.stringify(STATIC_DATA));
         let SYSTEM_SETTINGS = {
             marquee: '📢 歡迎來到北港高中學生會官方網站！'
         };
-
         const I18N = {
             zh: {
                 home: '首頁', events: '近期活動', mailboxes: '信箱專區', clubs: '社團專區', downloads: '資料下載',
@@ -383,7 +395,6 @@
                 admin_finance: 'Manage Finance', admin_meetings: 'Manage Minutes', admin_downloads: 'Manage Downloads'
             }
         };
-
         const APP_STATE = {
             view: 'home',
             lang: 'zh',
@@ -391,7 +402,11 @@
             eventFilter: 'All',
             user: null, 
             adminTab: 'news', 
-            isLoading: false
+            isLoading: false,
+            // [New State]
+            lightboxIndex: 0,
+            marqueeSizes: ['text-xs', 'text-sm', 'text-base'],
+            marqueeSizeIdx: 0
         };
 
         const t = (key) => I18N[APP_STATE.lang][key] || key;
@@ -450,13 +465,11 @@
                     else SYSTEM_SETTINGS.marquee = d.marquee || SYSTEM_SETTINGS.marquee;
                 }
                 updateMarquee();
-
                 const qNews = query(collection(db, "announcements"), orderBy("date", "desc"));
                 const snapNews = await getDocs(qNews);
                 const fetchedNews = [];
                 snapNews.forEach(doc => { fetchedNews.push({ id: doc.id, ...doc.data() }); });
                 if(fetchedNews.length > 0) APP_DATA.announcements = [...fetchedNews, ...STATIC_DATA.announcements];
-
                 const qEvents = query(collection(db, "events"), orderBy("date", "asc"));
                 const snapEvents = await getDocs(qEvents);
                 const fetchedEvents = [];
@@ -477,7 +490,6 @@
                 const fetchedMeetings = [];
                 snapMeetings.forEach(doc => fetchedMeetings.push({ id: doc.id, ...doc.data() }));
                 if(fetchedMeetings.length > 0) APP_DATA.meetings = fetchedMeetings;
-
                 const qDownloads = query(collection(db, "downloads"), orderBy("date", "desc"));
                 const snapDownloads = await getDocs(qDownloads);
                 const fetchedDownloads = [];
@@ -683,6 +695,16 @@
             el.innerHTML = content;
         }
 
+        window.toggleMarqueeSize = () => {
+            APP_STATE.marqueeSizeIdx = (APP_STATE.marqueeSizeIdx + 1) % APP_STATE.marqueeSizes.length;
+            const newSize = APP_STATE.marqueeSizes[APP_STATE.marqueeSizeIdx];
+            const el = document.getElementById('marquee-text');
+            // Remove all possible sizes
+            APP_STATE.marqueeSizes.forEach(s => el.classList.remove(s));
+            // Add new size
+            el.classList.add(newSize);
+        }
+
         window.toggleSearch = () => {
             const modal = document.getElementById('search-modal');
             const input = document.getElementById('search-input');
@@ -731,20 +753,57 @@
                 lucide.createIcons();
             }
         };
-
-        window.openLightbox = (url, caption) => {
+        
+        // [New] Lightbox Logic with Navigation
+        window.openLightbox = (index) => {
+            APP_STATE.lightboxIndex = index;
+            updateLightboxContent();
+            
             const modal = document.getElementById('lightbox-modal');
-            const img = document.getElementById('lightbox-img');
-            const text = document.getElementById('lightbox-caption');
-            img.src = url;
-            text.innerText = caption;
             modal.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
         };
+
+        function updateLightboxContent() {
+            if (!APP_DATA.photos || APP_DATA.photos.length === 0) return;
+            
+            const p = APP_DATA.photos[APP_STATE.lightboxIndex];
+            const img = document.getElementById('lightbox-img');
+            const text = document.getElementById('lightbox-caption');
+            const counter = document.getElementById('lightbox-counter');
+            
+            img.src = p.url;
+            text.innerText = val(p, 'title');
+            counter.innerText = `${APP_STATE.lightboxIndex + 1} / ${APP_DATA.photos.length}`;
+        }
+
+        window.switchLightbox = (direction) => {
+            if (!APP_DATA.photos || APP_DATA.photos.length === 0) return;
+            
+            let newIndex = APP_STATE.lightboxIndex + direction;
+            
+            // Loop functionality
+            if (newIndex < 0) newIndex = APP_DATA.photos.length - 1;
+            if (newIndex >= APP_DATA.photos.length) newIndex = 0;
+            
+            APP_STATE.lightboxIndex = newIndex;
+            updateLightboxContent();
+        };
+
         window.closeLightbox = () => {
             const modal = document.getElementById('lightbox-modal');
             modal.classList.add('opacity-0', 'pointer-events-none');
             setTimeout(() => modal.classList.add('hidden'), 300);
         };
+        
+        // Add keyboard support for Lightbox
+        document.addEventListener('keydown', (e) => {
+            const modal = document.getElementById('lightbox-modal');
+            if (modal.classList.contains('hidden')) return;
+            
+            if (e.key === 'ArrowLeft') window.switchLightbox(-1);
+            if (e.key === 'ArrowRight') window.switchLightbox(1);
+            if (e.key === 'Escape') window.closeLightbox();
+        });
 
         // --- Render Functions ---
         function renderHome() {
@@ -759,15 +818,13 @@
                     ${item.content_zh ? `<div class="text-gray-600 dark:text-gray-300 overflow-x-auto news-content leading-relaxed relative z-10">${formatContent(val(item, 'content'))}</div>` : ''}
                 </div>
             `).join('');
-
             // 右側功能：活動倒數 + 最新照片預覽
             let rightSideHtml = '';
-            
             // 1. 活動倒數
             let nextEventHtml = `<div class="p-8 text-center text-gray-400 dark:text-gray-500 font-medium">暫無即將到來的活動</div>`;
             const futureEvents = APP_DATA.events.filter(e => new Date(e.date) >= new Date());
             if (futureEvents.length > 0) {
-                const nextEv = futureEvents[0]; 
+                const nextEv = futureEvents[0];
                 const daysLeft = Math.ceil((new Date(nextEv.date) - new Date()) / (1000 * 60 * 60 * 24));
                 nextEventHtml = `
                     <div class="text-center relative z-10">
@@ -850,15 +907,14 @@
 
         function renderGallery() {
             const photos = APP_DATA.photos;
-            const galleryHtml = photos.length > 0 ? photos.map(p => `
-                <div class="break-inside-avoid mb-6 cursor-zoom-in group relative overflow-hidden rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700" onclick="openLightbox('${p.url}', '${val(p, 'title')}')">
+            const galleryHtml = photos.length > 0 ? photos.map((p, index) => `
+                <div class="break-inside-avoid mb-6 cursor-zoom-in group relative overflow-hidden rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700" onclick="openLightbox(${index})">
                     <img src="${p.url}" alt="${val(p, 'title')}" class="w-full h-auto object-cover transform group-hover:scale-105 transition duration-700 ease-out">
                     <div class="gallery-overlay absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-300 flex items-end p-6">
                         <p class="text-white font-bold text-lg transform translate-y-4 group-hover:translate-y-0 transition duration-300">${val(p, 'title')}</p>
                     </div>
                 </div>
             `).join('') : `<p class="col-span-full text-center text-gray-500 py-20 font-medium text-lg">目前沒有活動照片，敬請期待！</p>`;
-
             return `
                 <div class="text-center mb-10 animate-fade-in">
                     <h1 class="text-4xl font-black mb-2 text-theme-600 dark:text-theme-400 tracking-tight">${t('galleryTitle')}</h1>
@@ -975,7 +1031,6 @@
                     <td class="py-4 px-6 text-right font-mono"><span class="${f.amount > 0 ? 'text-green-600 bg-green-50 dark:bg-green-900/30 ring-1 ring-green-200 dark:ring-green-800' : 'text-red-600 bg-red-50 dark:bg-red-900/30 ring-1 ring-red-200 dark:ring-red-800'} font-bold px-3 py-1 rounded-md text-sm">${f.amount > 0 ? '+' : ''}${f.amount.toLocaleString()}</span></td>
                 </tr>
             `).join('');
-            
             return `
                 <div class="max-w-4xl mx-auto">
                     <h1 class="text-3xl font-black mb-8 text-theme-600 dark:text-theme-400 text-center tracking-tight">${t('financeTitle')}</h1>
@@ -1080,7 +1135,6 @@
             return `
                 <div class="max-w-3xl mx-auto bg-white dark:bg-gray-800 p-10 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 relative overflow-hidden">
                     <div class="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-theme-100 dark:bg-theme-900/30 rounded-full blur-2xl"></div>
-                    
                     <h1 class="text-3xl font-black mb-8 text-center text-theme-600 dark:text-theme-400 tracking-tight relative z-10">${t('contact')}</h1>
                     <div class="space-y-4 relative z-10">
                         <a href="https://www.instagram.com/pksh.su/" target="_blank" class="flex items-center p-5 bg-gradient-to-r from-gray-50 to-white dark:from-gray-700 dark:to-gray-800 border border-gray-100 dark:border-gray-600 rounded-2xl hover:border-pink-300 transition-all group shadow-sm hover:shadow-md">
@@ -1093,7 +1147,6 @@
                             </div>
                             <i data-lucide="arrow-right" class="ml-auto w-5 h-5 text-gray-300 group-hover:text-pink-500 group-hover:translate-x-1 transition-all"></i>
                         </a>
-                        
                         <a href="mailto:pkshsu@pksh.ylc.edu.tw" class="flex items-center p-5 bg-gradient-to-r from-gray-50 to-white dark:from-gray-700 dark:to-gray-800 border border-gray-100 dark:border-gray-600 rounded-2xl hover:border-theme-300 transition-all group shadow-sm hover:shadow-md">
                             <div class="bg-white p-3 rounded-xl shadow-sm group-hover:scale-110 transition-transform mr-5">
                                 <i data-lucide="mail" class="w-8 h-8 text-theme-500"></i>
@@ -1105,7 +1158,6 @@
                             <i data-lucide="arrow-right" class="ml-auto w-5 h-5 text-gray-300 group-hover:text-theme-500 group-hover:translate-x-1 transition-all"></i>
                         </a>
                     </div>
-                    
                     <div class="pt-8 mt-8 border-t border-gray-100 dark:border-gray-700 text-center">
                         <button onclick="navigate('admin')" class="text-xs font-bold text-gray-400 hover:text-theme-500 flex items-center justify-center transition mx-auto gap-1 py-2 px-4 rounded-full hover:bg-gray-50 dark:hover:bg-gray-700/50">
                             <i data-lucide="shield" class="w-3 h-3"></i> ${t('admin')}
@@ -1167,7 +1219,6 @@
                 const inputStyle = "w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white focus:ring-2 focus:ring-theme-500 focus:outline-none transition-shadow";
                 const labelStyle = "block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1";
                 const btnStyle = "bg-theme-500 hover:bg-theme-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all active:scale-95 w-full md:w-auto";
-
                 if (tab === 'news') {
                     const list = APP_DATA.announcements.filter(a => a.id && !a.id.startsWith('static_')).map(a => `
                          <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-900 p-4 rounded-xl border border-gray-100 dark:border-gray-700 group hover:border-theme-200 transition mb-3">
@@ -1343,11 +1394,9 @@
                     let marqueeVal = '';
                     if(Array.isArray(SYSTEM_SETTINGS.marquee)) marqueeVal = SYSTEM_SETTINGS.marquee.join(' | ');
                     else marqueeVal = SYSTEM_SETTINGS.marquee;
-
                     contentHtml = `
                         <div class="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 max-w-2xl mx-auto">
                             <h3 class="font-bold mb-6 dark:text-white text-xl flex items-center gap-2"><i data-lucide="settings" class="text-theme-500"></i> 系統全域設定</h3>
-                            
                             <div class="mb-8">
                                 <label class="${labelStyle}">首頁跑馬燈內容</label>
                                 <textarea id="system-marquee" rows="4" class="${inputStyle}" placeholder="輸入文字... 若要分段顯示，請使用 | 符號分隔">${marqueeVal}</textarea>
@@ -1364,7 +1413,6 @@
                         <i data-lucide="${icon}" class="w-5 h-5"></i> ${label}
                     </button>
                 `;
-
                 return `
                     <div class="bg-white dark:bg-gray-900 rounded-[2rem] shadow-2xl flex flex-col md:flex-row overflow-hidden border border-gray-100 dark:border-gray-800 min-h-[80vh]">
                         <div class="w-full md:w-64 bg-gray-50 dark:bg-gray-950 p-6 flex flex-col gap-1 border-r border-gray-100 dark:border-gray-800">
@@ -1412,14 +1460,12 @@
             document.querySelectorAll('#mobile-menu button').forEach(el => {
                 if(el.dataset.key && I18N[APP_STATE.lang][el.dataset.key]) el.innerText = I18N[APP_STATE.lang][el.dataset.key];
             });
-
             const routes = {
                 'home': renderHome, 'events': renderEvents, 'mailboxes': renderMailboxes,
                 'gallery': renderGallery,
                 'org': renderOrg, 'finance': renderFinance, 'clubs': renderClubs, 'downloads': renderDownloads,
                 'contact': renderContact, 'meetings': renderMeetings, 'admin': renderAdmin
             };
-            
             // 安全渲染
             try {
                 container.innerHTML = routes[view] ? routes[view]() : renderHome();
@@ -1446,7 +1492,6 @@
             if(searchInput) searchInput.placeholder = t('searchPlaceholder');
             render();
         };
-
         window.toggleDarkMode = () => {
             APP_STATE.darkMode = !APP_STATE.darkMode;
             document.documentElement.classList.toggle('dark');
@@ -1457,7 +1502,6 @@
         document.getElementById('menu-button').addEventListener('click', () => {
             document.getElementById('mobile-menu').classList.toggle('hidden');
         });
-
         // Init
         (async () => {
             await loadDataFromFirebase();
