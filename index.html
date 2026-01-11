@@ -13,8 +13,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
-            // 強制關閉深色模式偵測
-            darkMode: 'class',
+            darkMode: 'class', // [已恢復] 啟用深色模式偵測
             theme: {
                 fontFamily: {
                     sans: ['"Inter"', '"Noto Sans TC"', 'sans-serif'],
@@ -65,32 +64,36 @@
 
         /* 玻璃擬態 */
         .glass {
-            background: rgba(255, 255, 255, 0.95); /* 稍微調高不透明度，讓白底更純淨 */
+            background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         }
+        .dark .glass {
+            background: rgba(15, 23, 42, 0.9);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
 
-        /* [核心] 導覽列防爆設定 - 強制橫向滑動不換行 */
+        /* 導覽列 */
         .nav-scroll-container {
             display: flex;
             flex-wrap: nowrap;
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
-            scrollbar-width: none; /* Firefox */
+            scrollbar-width: none;
             gap: 0.25rem;
             height: 100%;
             align-items: center;
             padding: 0 0.5rem;
         }
-        .nav-scroll-container::-webkit-scrollbar { display: none; } /* Chrome */
+        .nav-scroll-container::-webkit-scrollbar { display: none; }
         
         .nav-btn {
-            flex-shrink: 0; /* 禁止壓縮 */
-            white-space: nowrap; /* 禁止換行 */
+            flex-shrink: 0; 
+            white-space: nowrap; 
         }
 
-        /* [修復] 跑馬燈動畫設定 */
+        /* 跑馬燈 */
         .marquee-container { overflow: hidden; white-space: nowrap; position: relative; }
         .marquee-content { display: inline-block; animation: marquee 30s linear infinite; }
         .marquee-content:hover { animation-play-state: paused; }
@@ -157,43 +160,23 @@
             transform: scale(1.05);
         }
 
-        /* [新增] 讓符號 (Icons) 變亮/變鮮豔的設定 */
-        svg.lucide {
-            stroke: #0d9488; /* 使用主題色 (Teal-600) 讓符號在白底上更清晰亮眼 */
-            stroke-width: 2.5px; /* 稍微加粗線條，增加可視度 */
-            transition: all 0.3s ease;
-        }
-
-        /* [例外] 保持白色文字按鈕內的圖標為白色 (如聯絡我們、回到頂端) */
-        .bg-theme-600 svg.lucide, 
-        .text-white svg.lucide,
-        .lightbox-nav-btn svg.lucide,
-        .lightbox-tool-btn svg.lucide {
-            stroke: white !important;
-        }
-
-        /* [例外] 社交媒體圖標 hover 時跟隨原本顏色 */
-        .group:hover .text-pink-500 svg.lucide { stroke: #ec4899 !important; }
-        .group:hover .text-blue-600 svg.lucide { stroke: #2563eb !important; }
+        /* [已移除] 之前強制所有 Lucide Icon 變色的 CSS 區塊已刪除，讓其他 Icon 恢復正常 */
     </style>
 </head>
-<body class="bg-gray-50 text-slate-800 flex flex-col min-h-screen relative font-sans selection:bg-theme-100 selection:text-theme-800">
+<body class="bg-gray-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 flex flex-col min-h-screen relative font-sans selection:bg-theme-100 selection:text-theme-800">
 
     <script>
-        // 強制移除 dark class，確保永遠是亮色模式
-        document.documentElement.classList.remove('dark');
-        
         window.onerror = function(msg, url, line) {
             if (msg.includes('ResizeObserver')) return;
         };
     </script>
 
     <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <div class="absolute -top-[10%] -right-[10%] w-[600px] h-[600px] bg-theme-200/20 rounded-full blur-[100px]"></div>
-        <div class="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-200/20 rounded-full blur-[100px]"></div>
+        <div class="absolute -top-[10%] -right-[10%] w-[600px] h-[600px] bg-theme-200/20 rounded-full blur-[100px] dark:bg-theme-900/10"></div>
+        <div class="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-200/20 rounded-full blur-[100px] dark:bg-blue-900/10"></div>
     </div>
 
-    <button onclick="window.scrollTo(0,0)" id="back-to-top" class="fixed bottom-8 right-8 z-50 bg-theme-600 text-white p-3 rounded-full shadow-lg opacity-0 pointer-events-none transition-all duration-300 hover:bg-theme-700 hover:scale-110 border border-theme-100 group">
+    <button onclick="window.scrollTo(0,0)" id="back-to-top" class="fixed bottom-8 right-8 z-50 bg-theme-600 text-white p-3 rounded-full shadow-lg opacity-0 pointer-events-none transition-all duration-300 hover:bg-theme-700 hover:scale-110 border border-theme-100 dark:border-slate-700 group">
         <i data-lucide="arrow-up" class="w-6 h-6 group-hover:-translate-y-0.5 transition-transform"></i>
     </button>
 
@@ -207,61 +190,65 @@
         <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16 sm:h-20 gap-4">
                 <a href="#" class="flex-shrink-0 flex items-center gap-3 group" onclick="navigate('home')">
-                    <img src="大頭貼.jpg" onerror="this.src='https://ui-avatars.com/api/?name=PKSH&background=0d9488&color=fff'" alt="Logo" class="w-10 h-10 rounded-full object-cover ring-2 ring-slate-100 group-hover:ring-theme-400 transition-all">
+                    <img src="大頭貼.jpg" onerror="this.src='https://ui-avatars.com/api/?name=PKSH&background=0d9488&color=fff'" alt="Logo" class="w-10 h-10 rounded-full object-cover ring-2 ring-slate-100 dark:ring-slate-700 group-hover:ring-theme-400 transition-all">
                     <div class="hidden sm:flex flex-col">
-                        <span class="text-lg font-bold tracking-tight leading-none text-slate-900">北港高中<span class="text-theme-500">學生會</span></span>
+                        <span class="text-lg font-bold tracking-tight leading-none text-slate-900 dark:text-white">北港高中<span class="text-theme-500">學生會</span></span>
                         <span class="text-[10px] font-semibold text-slate-400 tracking-widest mt-0.5 uppercase">PKSH SU</span>
                     </div>
                 </a>
 
                 <div class="hidden xl:flex flex-1 min-w-0 items-center justify-center">
                     <nav class="nav-scroll-container">
-                        <button class="nav-btn px-2.5 py-2 text-base font-bold tracking-tight rounded-full transition-colors hover:bg-gray-100" onclick="navigate('home')" data-key="home">首頁</button>
-                        <button class="nav-btn px-2.5 py-2 text-base font-bold tracking-tight rounded-full transition-colors hover:bg-gray-100" onclick="navigate('events')" data-key="events">近期活動</button>
-                        <button class="nav-btn px-2.5 py-2 text-base font-bold tracking-tight rounded-full transition-colors hover:bg-gray-100" onclick="navigate('gallery')" data-key="gallery">活動花絮</button>
-                        <button class="nav-btn px-2.5 py-2 text-base font-bold tracking-tight rounded-full transition-colors hover:bg-gray-100" onclick="navigate('clubs')" data-key="clubs">社團專區</button>
-                        <button class="nav-btn px-2.5 py-2 text-base font-bold tracking-tight rounded-full transition-colors hover:bg-gray-100" onclick="navigate('mailboxes')" data-key="mailboxes">信箱專區</button>
-                        <button class="nav-btn px-2.5 py-2 text-base font-bold tracking-tight rounded-full transition-colors hover:bg-gray-100" onclick="navigate('downloads')" data-key="downloads">資料下載</button>
-                        <button class="nav-btn px-2.5 py-2 text-base font-bold tracking-tight rounded-full transition-colors hover:bg-gray-100" onclick="navigate('finance')" data-key="finance">財務明細</button>
-                        <button class="nav-btn px-2.5 py-2 text-base font-bold tracking-tight rounded-full transition-colors hover:bg-gray-100" onclick="navigate('meetings')" data-key="meetings">會議紀錄</button>
-                        <button class="nav-btn px-2.5 py-2 text-base font-bold tracking-tight rounded-full transition-colors hover:bg-gray-100" onclick="navigate('org')" data-key="org">組織架構</button>
+                        <button class="nav-btn px-2.5 py-2 text-base font-bold tracking-tight rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-800" onclick="navigate('home')" data-key="home">首頁</button>
+                        <button class="nav-btn px-2.5 py-2 text-base font-bold tracking-tight rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-800" onclick="navigate('events')" data-key="events">近期活動</button>
+                        <button class="nav-btn px-2.5 py-2 text-base font-bold tracking-tight rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-800" onclick="navigate('gallery')" data-key="gallery">活動花絮</button>
+                        <button class="nav-btn px-2.5 py-2 text-base font-bold tracking-tight rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-800" onclick="navigate('clubs')" data-key="clubs">社團專區</button>
+                        <button class="nav-btn px-2.5 py-2 text-base font-bold tracking-tight rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-800" onclick="navigate('mailboxes')" data-key="mailboxes">信箱專區</button>
+                        <button class="nav-btn px-2.5 py-2 text-base font-bold tracking-tight rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-800" onclick="navigate('downloads')" data-key="downloads">資料下載</button>
+                        <button class="nav-btn px-2.5 py-2 text-base font-bold tracking-tight rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-800" onclick="navigate('finance')" data-key="finance">財務明細</button>
+                        <button class="nav-btn px-2.5 py-2 text-base font-bold tracking-tight rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-800" onclick="navigate('meetings')" data-key="meetings">會議紀錄</button>
+                        <button class="nav-btn px-2.5 py-2 text-base font-bold tracking-tight rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-800" onclick="navigate('org')" data-key="org">組織架構</button>
                         <button class="nav-btn ml-1 px-4 py-2 rounded-full bg-theme-600 text-white text-base font-bold shadow-md hover:bg-theme-700 hover:shadow-lg transition-all" onclick="navigate('contact')" data-key="contact">聯絡我們</button>
                     </nav>
                 </div>
 
                 <div class="flex items-center space-x-2 flex-shrink-0">
-                    <button onclick="toggleSearch()" class="p-2 rounded-full text-slate-500 hover:bg-slate-100 transition">
+                    <button onclick="toggleSearch()" class="p-2 rounded-full text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition">
                         <i data-lucide="search" class="w-5 h-5"></i>
                     </button>
-                    <button onclick="toggleLang()" class="w-8 h-8 flex items-center justify-center text-xs font-bold border border-slate-200 rounded-lg text-slate-600 hover:border-theme-500 hover:text-theme-500 transition">
+                    <button onclick="toggleLang()" class="w-8 h-8 flex items-center justify-center text-xs font-bold border border-slate-200 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-300 hover:border-theme-500 hover:text-theme-500 transition">
                         <span id="lang-display">EN</span>
                     </button>
-                    <button id="menu-button" class="xl:hidden p-2 text-slate-600">
+                    <button onclick="toggleDarkMode()" class="p-2 rounded-full text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition">
+                        <i data-lucide="moon" id="dark-icon" class="w-5 h-5"></i>
+                        <i data-lucide="sun" id="light-icon" class="w-5 h-5 hidden"></i>
+                    </button>
+                    <button id="menu-button" class="xl:hidden p-2 text-slate-600 dark:text-slate-200">
                         <i data-lucide="menu" class="w-6 h-6"></i>
                     </button>
                 </div>
             </div>
         </div>
         
-        <div id="mobile-menu" class="xl:hidden hidden bg-white/95 backdrop-blur-xl border-t border-slate-100 absolute w-full z-40 shadow-2xl animate-fade-in">
+        <div id="mobile-menu" class="xl:hidden hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-100 dark:border-slate-800 absolute w-full z-40 shadow-2xl animate-fade-in">
             <div class="p-4 space-y-1 max-h-[80vh] overflow-y-auto">
-                <button class="block w-full text-left py-3 px-4 rounded-xl font-medium hover:bg-slate-50" onclick="navigate('home')" data-key="home">首頁</button>
-                <button class="block w-full text-left py-3 px-4 rounded-xl font-medium hover:bg-slate-50" onclick="navigate('events')" data-key="events">近期活動</button>
-                <button class="block w-full text-left py-3 px-4 rounded-xl font-medium hover:bg-slate-50" onclick="navigate('gallery')" data-key="gallery">活動花絮</button>
-                <button class="block w-full text-left py-3 px-4 rounded-xl font-medium hover:bg-slate-50" onclick="navigate('clubs')" data-key="clubs">社團專區</button>
-                <button class="block w-full text-left py-3 px-4 rounded-xl font-medium hover:bg-slate-50" onclick="navigate('mailboxes')" data-key="mailboxes">信箱專區</button>
-                <button class="block w-full text-left py-3 px-4 rounded-xl font-medium hover:bg-slate-50" onclick="navigate('downloads')" data-key="downloads">資料下載</button>
-                <button class="block w-full text-left py-3 px-4 rounded-xl font-medium hover:bg-slate-50" onclick="navigate('finance')" data-key="finance">財務明細</button>
-                <button class="block w-full text-left py-3 px-4 rounded-xl font-medium hover:bg-slate-50" onclick="navigate('meetings')" data-key="meetings">會議紀錄</button>
-                <button class="block w-full text-left py-3 px-4 rounded-xl font-medium hover:bg-slate-50" onclick="navigate('org')" data-key="org">組織架構</button>
-                <button class="block w-full text-left py-3 px-4 rounded-xl font-bold text-theme-600 bg-theme-50" onclick="navigate('contact')" data-key="contact">聯絡我們</button>
+                <button class="block w-full text-left py-3 px-4 rounded-xl font-medium hover:bg-slate-50 dark:hover:bg-slate-800" onclick="navigate('home')" data-key="home">首頁</button>
+                <button class="block w-full text-left py-3 px-4 rounded-xl font-medium hover:bg-slate-50 dark:hover:bg-slate-800" onclick="navigate('events')" data-key="events">近期活動</button>
+                <button class="block w-full text-left py-3 px-4 rounded-xl font-medium hover:bg-slate-50 dark:hover:bg-slate-800" onclick="navigate('gallery')" data-key="gallery">活動花絮</button>
+                <button class="block w-full text-left py-3 px-4 rounded-xl font-medium hover:bg-slate-50 dark:hover:bg-slate-800" onclick="navigate('clubs')" data-key="clubs">社團專區</button>
+                <button class="block w-full text-left py-3 px-4 rounded-xl font-medium hover:bg-slate-50 dark:hover:bg-slate-800" onclick="navigate('mailboxes')" data-key="mailboxes">信箱專區</button>
+                <button class="block w-full text-left py-3 px-4 rounded-xl font-medium hover:bg-slate-50 dark:hover:bg-slate-800" onclick="navigate('downloads')" data-key="downloads">資料下載</button>
+                <button class="block w-full text-left py-3 px-4 rounded-xl font-medium hover:bg-slate-50 dark:hover:bg-slate-800" onclick="navigate('finance')" data-key="finance">財務明細</button>
+                <button class="block w-full text-left py-3 px-4 rounded-xl font-medium hover:bg-slate-50 dark:hover:bg-slate-800" onclick="navigate('meetings')" data-key="meetings">會議紀錄</button>
+                <button class="block w-full text-left py-3 px-4 rounded-xl font-medium hover:bg-slate-50 dark:hover:bg-slate-800" onclick="navigate('org')" data-key="org">組織架構</button>
+                <button class="block w-full text-left py-3 px-4 rounded-xl font-bold text-theme-600 bg-theme-50 dark:bg-theme-900/20" onclick="navigate('contact')" data-key="contact">聯絡我們</button>
             </div>
         </div>
     </header>
 
     <div id="search-modal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-md hidden flex flex-col pt-32 px-4 items-center animate-fade-in transition-opacity">
         <div class="w-full max-w-2xl relative transform transition-all scale-100">
-            <input type="text" id="search-input" class="w-full bg-white text-xl p-5 pl-6 rounded-2xl shadow-2xl border-none ring-1 ring-black/5 focus:ring-2 focus:ring-theme-500 focus:outline-none transition-all" placeholder="搜尋網站內容..." onkeyup="performSearch()">
+            <input type="text" id="search-input" class="w-full bg-white dark:bg-slate-800 text-xl p-5 pl-6 rounded-2xl shadow-2xl dark:text-white border-none ring-1 ring-black/5 focus:ring-2 focus:ring-theme-500 focus:outline-none transition-all" placeholder="搜尋網站內容..." onkeyup="performSearch()">
             <button onclick="toggleSearch()" class="absolute right-5 top-5 text-gray-400 hover:text-theme-500 transition-colors">
                 <i data-lucide="x" class="w-6 h-6"></i>
             </button>
@@ -301,22 +288,22 @@
     <main class="max-w-[1400px] mx-auto p-4 sm:p-6 lg:p-8 flex-grow w-full relative z-10 animate-fade-in" id="app-container">
     </main>
 
-    <footer class="bg-white/50 backdrop-blur border-t border-slate-200 mt-auto py-12 relative z-10">
+    <footer class="bg-white/50 dark:bg-slate-900/50 backdrop-blur border-t border-slate-200 dark:border-slate-800 mt-auto py-12 relative z-10">
         <div class="max-w-7xl mx-auto px-4 text-center">
             <div class="flex justify-center items-center gap-3 mb-6">
                 <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-theme-400 to-theme-600 p-0.5 grayscale hover:grayscale-0 transition-all">
                     <img src="大頭貼.jpg" onerror="this.src='https://ui-avatars.com/api/?name=PKSH&background=fff&color=0d9488'" class="w-full h-full rounded-full object-cover bg-white">
                 </div>
-                <span class="font-bold text-lg text-slate-800 tracking-tight">PKSH Student Council</span>
+                <span class="font-bold text-lg text-slate-800 dark:text-white tracking-tight">PKSH Student Council</span>
             </div>
             <div class="flex justify-center items-center gap-6 mb-8">
-                <a href="https://www.instagram.com/pksh.su/" target="_blank" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 text-slate-400 hover:text-pink-500 hover:bg-white shadow-sm transition-all hover:-translate-y-1">
+                <a href="https://www.instagram.com/pksh.su/" target="_blank" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-pink-500 hover:bg-white shadow-sm transition-all hover:-translate-y-1">
                     <i data-lucide="instagram" class="w-5 h-5"></i>
                 </a>
-                <a href="https://www.facebook.com/52PKSH/?locale=zh_TW" target="_blank" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 text-slate-400 hover:text-blue-600 hover:bg-white shadow-sm transition-all hover:-translate-y-1">
+                <a href="https://www.facebook.com/52PKSH/?locale=zh_TW" target="_blank" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-blue-600 hover:bg-white shadow-sm transition-all hover:-translate-y-1">
                     <i data-lucide="facebook" class="w-5 h-5"></i>
                 </a>
-                <a href="https://www.pksh.ylc.edu.tw/home" target="_blank" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 text-slate-400 hover:text-theme-600 hover:bg-white shadow-sm transition-all hover:-translate-y-1">
+                <a href="https://www.pksh.ylc.edu.tw/home" target="_blank" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-theme-600 hover:bg-white shadow-sm transition-all hover:-translate-y-1">
                     <i data-lucide="globe" class="w-5 h-5"></i>
                 </a>
             </div>
@@ -495,7 +482,7 @@
             return text.replace(urlRegex, (url) => {
                 const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
                 if (ytMatch && ytMatch[1]) {
-                    return `<div class="my-4 w-full aspect-video"><iframe src="https://www.youtube.com/embed/${ytMatch[1]}" class="w-full h-full rounded-2xl shadow-lg border-2 border-white" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
+                    return `<div class="my-4 w-full aspect-video"><iframe src="https://www.youtube.com/embed/${ytMatch[1]}" class="w-full h-full rounded-2xl shadow-lg border-2 border-white dark:border-gray-700" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
                 }
                 if (url.toLowerCase().endsWith('.pdf')) {
                     let filename = '下載 PDF 文件';
@@ -503,7 +490,7 @@
                     return `<a href="${url}" target="_blank" class="btn-link group block mt-3 w-full text-center bg-gradient-to-r from-red-50 to-white border border-red-200 text-red-600 rounded-xl py-3.5 hover:from-red-100 hover:to-red-50 hover:shadow-md transition-all font-bold"><i data-lucide="file-down" class="inline-block mr-2 w-5 h-5 group-hover:scale-110 transition-transform"></i>${filename}</a>`;
                 }
                 if (/\.(jpeg|jpg|gif|png)$/i.test(url)) {
-                     return `<img src="${url}" class="mt-3 rounded-2xl shadow-lg max-h-80 mx-auto border-4 border-white hover:scale-[1.02] transition-transform" alt="Image">`;
+                     return `<img src="${url}" class="mt-3 rounded-2xl shadow-lg max-h-80 mx-auto border-4 border-white dark:border-gray-700 hover:scale-[1.02] transition-transform" alt="Image">`;
                 }
                 return `<a href="${url}" target="_blank" class="text-theme-600 font-bold hover:text-theme-700 transition-colors inline-flex items-center gap-1 border-b-2 border-theme-200 hover:border-theme-500 pb-0.5">🔗 開啟連結 <i data-lucide="external-link" class="w-3 h-3"></i></a>`;
             });
@@ -937,32 +924,32 @@
         function renderHome() {
             const announcements = APP_DATA.announcements;
             const newsHtml = announcements.map(item => `
-                <div class="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all border-l-[6px] border-theme-500 hover-lift relative overflow-hidden">
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all border-l-[6px] border-theme-500 hover-lift relative overflow-hidden">
                     <div class="flex justify-between items-start mb-2 relative z-10">
-                        <span class="text-xs font-bold text-theme-600 uppercase tracking-wider bg-theme-50 px-2 py-1 rounded">${val(item, 'tag')}</span>
+                        <span class="text-xs font-bold text-theme-600 dark:text-theme-400 uppercase tracking-wider bg-theme-50 dark:bg-theme-900/30 px-2 py-1 rounded">${val(item, 'tag')}</span>
                         <span class="text-xs text-gray-400 font-mono">${item.date}</span>
                     </div>
-                    <h3 class="text-xl lg:text-2xl font-bold mb-3 text-slate-800 leading-tight relative z-10">${val(item, 'title')}</h3>
-                    ${item.content_zh ? `<div class="text-gray-600 overflow-x-auto news-content leading-relaxed relative z-10">${formatContent(val(item, 'content'))}</div>` : ''}
+                    <h3 class="text-xl lg:text-2xl font-bold mb-3 dark:text-white leading-tight relative z-10">${val(item, 'title')}</h3>
+                    ${item.content_zh ? `<div class="text-gray-600 dark:text-gray-300 overflow-x-auto news-content leading-relaxed relative z-10">${formatContent(val(item, 'content'))}</div>` : ''}
                 </div>
             `).join('');
             // 右側功能：活動倒數 + 最新照片預覽
             let rightSideHtml = '';
             // 1. 活動倒數
-            let nextEventHtml = `<div class="p-8 text-center text-gray-400 font-medium">暫無即將到來的活動</div>`;
+            let nextEventHtml = `<div class="p-8 text-center text-gray-400 dark:text-gray-500 font-medium">暫無即將到來的活動</div>`;
             const futureEvents = APP_DATA.events.filter(e => new Date(e.date) >= new Date());
             if (futureEvents.length > 0) {
                 const nextEv = futureEvents[0];
                 const daysLeft = Math.ceil((new Date(nextEv.date) - new Date()) / (1000 * 60 * 60 * 24));
                 nextEventHtml = `
                     <div class="text-center relative z-10">
-                        <span class="text-xs font-black text-gray-400 uppercase tracking-[0.2em]">NEXT EVENT</span>
-                        <h3 class="text-2xl font-black mt-3 bg-clip-text text-transparent bg-gradient-to-r from-theme-500 to-blue-500">${val(nextEv, 'title')}</h3>
+                        <span class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em]">NEXT EVENT</span>
+                        <h3 class="text-2xl font-black mt-3 dark:text-white bg-clip-text text-transparent bg-gradient-to-r from-theme-500 to-blue-500">${val(nextEv, 'title')}</h3>
                         <div class="my-6 relative inline-block">
                             <span class="text-6xl font-black text-theme-500 drop-shadow-sm">${daysLeft}</span>
                             <span class="text-gray-400 font-bold block mt-1 text-sm tracking-widest">DAYS LEFT</span>
                         </div>
-                        <p class="text-sm text-gray-500 font-medium bg-gray-100 py-2 rounded-lg"><i data-lucide="calendar" class="inline w-4 h-4 mb-0.5 mr-1"></i> ${nextEv.date} @ ${val(nextEv, 'location')}</p>
+                        <p class="text-sm text-gray-500 font-medium bg-gray-100 dark:bg-gray-700/50 py-2 rounded-lg"><i data-lucide="calendar" class="inline w-4 h-4 mb-0.5 mr-1"></i> ${nextEv.date} @ ${val(nextEv, 'location')}</p>
                     </div>
                 `;
             }
@@ -972,7 +959,7 @@
             if(APP_DATA.photos && APP_DATA.photos.length > 0) {
                 const p = APP_DATA.photos[0];
                 latestPhotoHtml = `
-                    <div class="bg-white p-1 rounded-3xl shadow-lg border border-gray-100 mt-8 group cursor-pointer" onclick="navigate('gallery')">
+                    <div class="bg-white dark:bg-gray-800 p-1 rounded-3xl shadow-lg border border-gray-100 dark:border-gray-700 mt-8 group cursor-pointer" onclick="navigate('gallery')">
                         <div class="relative overflow-hidden rounded-[20px] aspect-video">
                             <img src="${p.url}" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-700" loading="lazy">
                             <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300">
@@ -1003,27 +990,27 @@
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div class="lg:col-span-2 space-y-6">
-                        <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-3"><span class="bg-theme-100 p-2 rounded-lg text-theme-600"><i data-lucide="bell" class="w-6 h-6"></i></span> ${t('news')}</h2>
+                        <h2 class="text-2xl font-bold dark:text-white flex items-center gap-3"><span class="bg-theme-100 dark:bg-theme-900/30 p-2 rounded-lg text-theme-600 dark:text-theme-400"><i data-lucide="bell" class="w-6 h-6"></i></span> ${t('news')}</h2>
                         <div class="grid gap-6 md:grid-cols-1">${newsHtml}</div>
                     </div>
 
                     <div class="space-y-6">
-                        <div class="bg-white p-8 rounded-3xl shadow-xl border border-gray-100 overflow-hidden hover-lift">
+                        <div class="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden hover-lift">
                             <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-theme-400 to-blue-500"></div>
                             ${nextEventHtml}
                         </div>
                         
                         ${latestPhotoHtml}
 
-                        <div class="bg-white p-6 rounded-3xl shadow-lg border border-gray-100">
-                            <h3 class="font-bold text-gray-800 mb-5 flex items-center gap-2 text-lg"><i data-lucide="link" class="text-blue-500"></i> 常用連結</h3>
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-lg border border-gray-100 dark:border-gray-700">
+                            <h3 class="font-bold text-gray-800 dark:text-white mb-5 flex items-center gap-2 text-lg"><i data-lucide="link" class="text-blue-500"></i> 常用連結</h3>
                             <div class="space-y-3">
-                                <a href="https://www.pksh.ylc.edu.tw/" target="_blank" class="block p-4 bg-gray-50 rounded-2xl hover:bg-blue-50 transition flex items-center justify-between group border border-transparent hover:border-blue-200">
-                                    <span class="font-bold text-gray-700 group-hover:text-blue-600 transition-colors">🏫 學校官網</span>
+                                <a href="https://www.pksh.ylc.edu.tw/" target="_blank" class="block p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl hover:bg-blue-50 dark:hover:bg-blue-900/20 transition flex items-center justify-between group border border-transparent hover:border-blue-200 dark:hover:border-blue-800">
+                                    <span class="font-bold text-gray-700 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">🏫 學校官網</span>
                                     <i data-lucide="external-link" class="w-4 h-4 text-gray-400 group-hover:text-blue-500"></i>
                                 </a>
-                                <a href="https://portal.k12.ntut.edu.tw/" target="_blank" class="block p-4 bg-gray-50 rounded-2xl hover:bg-green-50 transition flex items-center justify-between group border border-transparent hover:border-green-200">
-                                    <span class="font-bold text-gray-700 group-hover:text-green-600 transition-colors">📊 成績查詢</span>
+                                <a href="https://school.ylc.edu.tw/" target="_blank" class="block p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl hover:bg-green-50 dark:hover:bg-green-900/20 transition flex items-center justify-between group border border-transparent hover:border-green-200 dark:hover:border-green-800">
+                                    <span class="font-bold text-gray-700 dark:text-gray-200 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">📊 成績查詢</span>
                                     <i data-lucide="external-link" class="w-4 h-4 text-gray-400 group-hover:text-green-500"></i>
                                 </a>
                             </div>
@@ -1057,7 +1044,7 @@
                     const coverPhoto = albumsMap[name][0];
                     const count = albumsMap[name].length;
                     return `
-                        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden cursor-pointer group hover:shadow-2xl transition-all" onclick="openAlbum('${name}')">
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden cursor-pointer group hover:shadow-2xl transition-all" onclick="openAlbum('${name}')">
                             <div class="aspect-video relative overflow-hidden">
                                 <img src="${coverPhoto.url}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy">
                                 <div class="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors"></div>
@@ -1074,7 +1061,7 @@
 
                 return `
                     <div class="text-center mb-10 animate-fade-in">
-                        <h1 class="text-4xl font-black mb-2 text-theme-600 tracking-tight">${t('galleryTitle')}</h1>
+                        <h1 class="text-4xl font-black mb-2 text-theme-600 dark:text-theme-400 tracking-tight">${t('galleryTitle')}</h1>
                         <p class="text-gray-500">點擊相簿查看更多精彩瞬間</p>
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
@@ -1087,8 +1074,10 @@
                 const currentAlbumName = APP_STATE.activeAlbum;
                 const albumPhotos = photos.filter(p => (p.album || '未分類') === currentAlbumName);
                 
+                // [FIXED] onClick now just passes index, openLightbox handles the rest
+                // [IMPROVED] Use CSS columns for masonry layout effect
                 const photoHtml = albumPhotos.map((p, idx) => `
-                    <div class="break-inside-avoid mb-6 cursor-zoom-in group relative overflow-hidden rounded-2xl shadow-lg border border-gray-100" onclick="openLightbox(${idx})">
+                    <div class="break-inside-avoid mb-6 cursor-zoom-in group relative overflow-hidden rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700" onclick="openLightbox(${idx})">
                         <img src="${p.url}" alt="${val(p, 'title')}" class="w-full h-auto object-cover transform group-hover:scale-105 transition duration-700 ease-out" loading="lazy">
                         <div class="gallery-overlay absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-300 flex items-end p-6">
                             <p class="text-white font-bold text-lg transform translate-y-4 group-hover:translate-y-0 transition duration-300">${val(p, 'title')}</p>
@@ -1098,12 +1087,12 @@
 
                 return `
                     <div class="mb-8 flex items-center animate-fade-in">
-                        <button onclick="backToAlbums()" class="flex items-center gap-2 text-gray-500 hover:text-theme-600 transition-colors font-bold bg-white px-4 py-2 rounded-full shadow-sm">
+                        <button onclick="backToAlbums()" class="flex items-center gap-2 text-gray-500 hover:text-theme-600 transition-colors font-bold bg-white dark:bg-gray-800 px-4 py-2 rounded-full shadow-sm">
                             <i data-lucide="arrow-left" class="w-5 h-5"></i> 返回相簿列表
                         </button>
                     </div>
                     <div class="text-center mb-10 animate-fade-in">
-                        <h1 class="text-3xl font-black mb-2 text-slate-800 tracking-tight">${currentAlbumName}</h1>
+                        <h1 class="text-3xl font-black mb-2 dark:text-white tracking-tight">${currentAlbumName}</h1>
                     </div>
                     <div class="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6 animate-fade-in px-2">
                         ${photoHtml}
@@ -1127,15 +1116,15 @@
                 const { month, day } = formatDateHelper(ev.date);
                 
                 return `
-                <div class="flex items-center bg-white p-5 rounded-2xl shadow-md mb-5 border-l-[6px] ${ev.type === 'Holiday' ? 'border-red-500' : ev.type === 'Academic' ? 'border-blue-500' : 'border-theme-500'} hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
-                    <div class="p-4 bg-gray-50 rounded-xl text-center min-w-[90px] border border-gray-100 group-hover:border-theme-200 transition-colors">
-                        <span class="block text-2xl font-black text-gray-800">${day}</span>
+                <div class="flex items-center bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-md mb-5 border-l-[6px] ${ev.type === 'Holiday' ? 'border-red-500' : ev.type === 'Academic' ? 'border-blue-500' : 'border-theme-500'} hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+                    <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-xl text-center min-w-[90px] border border-gray-100 dark:border-gray-600 group-hover:border-theme-200 transition-colors">
+                        <span class="block text-2xl font-black text-gray-800 dark:text-white">${day}</span>
                         <span class="block text-xs font-bold text-gray-500 uppercase mt-1">${month}月</span>
                     </div>
                     <div class="ml-6 flex-grow">
                         <div class="flex justify-between items-start">
-                            <h3 class="text-xl font-bold text-slate-800 group-hover:text-theme-600 transition-colors">${val(ev, 'title')}</h3>
-                            <span class="text-xs px-2.5 py-1 rounded-full font-bold tracking-wide ${ev.type==='Holiday'?'bg-red-100 text-red-600':ev.type==='Academic'?'bg-blue-100 text-blue-600':'bg-theme-50 text-theme-600'}">${isEn() ? ev.type : (ev.type==='Holiday'?'假日':ev.type==='Academic'?'教務':'活動')}</span>
+                            <h3 class="text-xl font-bold dark:text-white group-hover:text-theme-600 transition-colors">${val(ev, 'title')}</h3>
+                            <span class="text-xs px-2.5 py-1 rounded-full font-bold tracking-wide ${ev.type==='Holiday'?'bg-red-100 text-red-600':ev.type==='Academic'?'bg-blue-100 text-blue-600':'bg-theme-50 text-theme-600 dark:bg-theme-900/30 dark:text-theme-400'}">${isEn() ? ev.type : (ev.type==='Holiday'?'假日':ev.type==='Academic'?'教務':'活動')}</span>
                         </div>
                         <p class="text-sm text-gray-500 font-medium flex items-center gap-2 mt-2">
                             <span class="flex items-center"><i data-lucide="map-pin" class="w-3.5 h-3.5 mr-1"></i> ${val(ev, 'location')}</span>
@@ -1143,22 +1132,22 @@
                             <span class="flex items-center"><i data-lucide="clock" class="w-3.5 h-3.5 mr-1"></i> ${ev.time}</span>
                         </p>
                         ${ev.link ? `
-                            <a href="${ev.link}" target="_blank" class="inline-flex items-center mt-3 text-sm text-theme-600 font-bold hover:underline decoration-2 underline-offset-2">
+                            <a href="${ev.link}" target="_blank" class="inline-flex items-center mt-3 text-sm text-theme-600 dark:text-theme-400 font-bold hover:underline decoration-2 underline-offset-2">
                                 相關連結/報名 <i data-lucide="external-link" class="w-3.5 h-3.5 ml-1"></i>
                             </a>
                         ` : ''}
                     </div>
                 </div>
-            `}).join('') : `<div class="text-center text-gray-400 py-20 font-medium bg-gray-50 rounded-2xl">此分類暫無活動</div>`;
+            `}).join('') : `<div class="text-center text-gray-400 py-20 font-medium bg-gray-50 dark:bg-gray-800/50 rounded-2xl">此分類暫無活動</div>`;
             const makeBtn = (type, label) => `
-                <button onclick="setEventFilter('${type}')" class="px-6 py-2.5 rounded-full text-sm font-bold transition-all transform active:scale-95 ${APP_STATE.eventFilter === type ? 'bg-theme-600 text-white shadow-lg ring-2 ring-theme-200' : 'bg-white text-gray-600 hover:bg-gray-100 shadow-sm border border-gray-200'}">
+                <button onclick="setEventFilter('${type}')" class="px-6 py-2.5 rounded-full text-sm font-bold transition-all transform active:scale-95 ${APP_STATE.eventFilter === type ? 'bg-theme-600 text-white shadow-lg ring-2 ring-theme-200' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 shadow-sm border border-gray-200 dark:border-gray-700'}">
                     ${label}
                 </button>
             `;
             return `
                 <div class="max-w-4xl mx-auto">
                     <div class="text-center mb-10">
-                        <h1 class="text-4xl font-black text-theme-600 tracking-tight mb-2">${t('eventTitle')}</h1>
+                        <h1 class="text-4xl font-black text-theme-600 dark:text-theme-400 tracking-tight mb-2">${t('eventTitle')}</h1>
                         <div class="flex justify-center gap-3 flex-wrap animate-fade-in mt-6">
                             ${makeBtn('All', t('filter_all'))}
                             ${makeBtn('Academic', t('filter_academic'))}
@@ -1180,33 +1169,32 @@
 
         function renderOrg() {
             const leadersHtml = APP_DATA.orgLeaders.map(l => `
-                <div class="bg-white p-8 rounded-3xl shadow-lg flex flex-col items-center text-center border-t-[6px] border-theme-500 hover:scale-105 transition-all duration-300 hover:shadow-2xl">
+                <div class="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-lg flex flex-col items-center text-center border-t-[6px] border-theme-500 hover:scale-105 transition-all duration-300 hover:shadow-2xl">
                     <div class="text-7xl mb-6 animate-float filter drop-shadow-md">${l.icon}</div>
-                    <h3 class="text-2xl font-black text-theme-600 tracking-tight mb-1">${t(l.roleKey)}</h3>
-                    <div class="w-12 h-1 bg-gray-200 rounded-full mb-4"></div>
-                    <p class="text-xl font-bold text-slate-800 mb-3 uppercase tracking-wide">${val(l, 'name')}</p>
-                    <p class="text-sm text-gray-500 leading-relaxed font-medium bg-gray-50 p-4 rounded-xl w-full text-justify">${val(l, 'desc')}</p>
+                    <h3 class="text-2xl font-black text-theme-600 dark:text-theme-400 tracking-tight mb-1">${t(l.roleKey)}</h3>
+                    <div class="w-12 h-1 bg-gray-200 dark:bg-gray-700 rounded-full mb-4"></div>
+                    <p class="text-xl font-bold dark:text-white mb-3 uppercase tracking-wide">${val(l, 'name')}</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed font-medium bg-gray-50 dark:bg-gray-700/50 p-4 rounded-xl w-full text-justify">${val(l, 'desc')}</p>
                 </div>
             `).join('');
             const deptsHtml = APP_DATA.orgDepts.map(d => `
-                <div class="bg-white p-6 rounded-2xl shadow-md hover:-translate-y-2 transition-all duration-300 h-full border border-gray-100 group hover:border-theme-300">
-                    <div class="flex items-center gap-4 mb-5 pb-3 border-b border-gray-100">
-                        <span class="text-4xl filter grayscale group-hover:grayscale-0 transition duration-300">${d.icon}</span>
-                        <h3 class="text-xl font-bold text-gray-800 group-hover:text-theme-600 transition-colors">${t(d.roleKey)}</h3>
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md hover:-translate-y-2 transition-all duration-300 h-full border border-gray-100 dark:border-gray-700 group hover:border-theme-300">
+                    <div class="flex items-center gap-4 mb-5 pb-3 border-b border-gray-100 dark:border-gray-700">
+                        <span class="text-4xl filter grayscale-0 transition duration-300">${d.icon}</span> <h3 class="text-xl font-bold text-gray-800 dark:text-white group-hover:text-theme-600 transition-colors">${t(d.roleKey)}</h3>
                     </div>
-                    <div class="flex justify-between mb-5 bg-gray-50 p-3 rounded-xl">
-                        <div class="text-center w-1/2 border-r border-gray-200">
+                    <div class="flex justify-between mb-5 bg-gray-50 dark:bg-gray-700/30 p-3 rounded-xl">
+                        <div class="text-center w-1/2 border-r border-gray-200 dark:border-gray-600">
                             <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">${t('role_chief')}</span>
-                            <span class="font-bold text-base text-slate-800 uppercase">${val(d, 'chief')}</span>
+                            <span class="font-bold text-base dark:text-white uppercase">${val(d, 'chief')}</span>
                         </div>
-                        ${d.deputy_zh ? `<div class="text-center w-1/2"><span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">${t('role_deputy')}</span><span class="font-bold text-base text-slate-800 uppercase">${val(d, 'deputy')}</span></div>` : ''}
+                        ${d.deputy_zh ? `<div class="text-center w-1/2"><span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">${t('role_deputy')}</span><span class="font-bold text-base dark:text-white uppercase">${val(d, 'deputy')}</span></div>` : ''}
                     </div>
-                    <p class="text-sm text-gray-500 leading-relaxed text-justify">${val(d, 'desc')}</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed text-justify">${val(d, 'desc')}</p>
                 </div>
             `).join('');
             return `
                 <div class="text-center mb-12">
-                    <h1 class="text-4xl font-black mb-4 text-theme-600 tracking-tight">${t('orgTitle')}</h1>
+                    <h1 class="text-4xl font-black mb-4 text-theme-600 dark:text-theme-400 tracking-tight">${t('orgTitle')}</h1>
                     <p class="text-gray-500 max-w-2xl mx-auto">學生會由會長與副會長領導，下設六大職能部門，各司其職，共同為全校同學服務。</p>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-16 animate-fade-in">${leadersHtml}</div>
@@ -1217,25 +1205,25 @@
         function renderFinance() {
             const total = APP_DATA.finance.reduce((acc, cur) => acc + Number(cur.amount), 0);
             const rows = APP_DATA.finance.map(f => `
-                <tr class="border-b border-gray-100 hover:bg-gray-50 transition last:border-0">
-                    <td class="py-4 px-6 text-gray-600 font-mono text-sm">${f.date}</td>
-                    <td class="py-4 px-6 font-bold text-gray-800">${val(f, 'item')}</td>
-                    <td class="py-4 px-6 text-right font-mono"><span class="${f.amount > 0 ? 'text-green-600 bg-green-50 ring-1 ring-green-200' : 'text-red-600 bg-red-50 ring-1 ring-red-200'} font-bold px-3 py-1 rounded-md text-sm">${f.amount > 0 ? '+' : ''}${f.amount.toLocaleString()}</span></td>
+                <tr class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition last:border-0">
+                    <td class="py-4 px-6 dark:text-gray-300 font-mono text-sm">${f.date}</td>
+                    <td class="py-4 px-6 font-bold dark:text-white text-gray-800">${val(f, 'item')}</td>
+                    <td class="py-4 px-6 text-right font-mono"><span class="${f.amount > 0 ? 'text-green-600 bg-green-50 dark:bg-green-900/30 ring-1 ring-green-200 dark:ring-green-800' : 'text-red-600 bg-red-50 dark:bg-red-900/30 ring-1 ring-red-200 dark:ring-red-800'} font-bold px-3 py-1 rounded-md text-sm">${f.amount > 0 ? '+' : ''}${f.amount.toLocaleString()}</span></td>
                 </tr>
             `).join('');
             return `
                 <div class="max-w-4xl mx-auto">
-                    <h1 class="text-3xl font-black mb-8 text-theme-600 text-center tracking-tight">${t('financeTitle')}</h1>
-                    <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
-                        <div class="p-8 bg-gradient-to-r from-gray-50 to-white border-b border-gray-200 flex flex-col md:flex-row justify-between items-center gap-6">
+                    <h1 class="text-3xl font-black mb-8 text-theme-600 dark:text-theme-400 text-center tracking-tight">${t('financeTitle')}</h1>
+                    <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden border border-gray-100 dark:border-gray-700">
+                        <div class="p-8 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-750 border-b border-gray-200 dark:border-gray-700 flex flex-col md:flex-row justify-between items-center gap-6">
                             <div class="flex items-center gap-3">
-                                <div class="bg-theme-100 p-3 rounded-full text-theme-600"><i data-lucide="pie-chart" class="w-6 h-6"></i></div>
-                                <p class="text-sm text-gray-500 font-medium">本表僅列出近期收支概況，詳細報表請至學生會辦公室查閱。</p>
+                                <div class="bg-theme-100 dark:bg-theme-900/30 p-3 rounded-full text-theme-600 dark:text-theme-400"><i data-lucide="pie-chart" class="w-6 h-6"></i></div>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">本表僅列出近期收支概況，詳細報表請至學生會辦公室查閱。</p>
                             </div>
                             <div class="flex flex-col items-end">
                                 <span class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">CURRENT BALANCE</span>
                                 <div class="flex items-baseline gap-2">
-                                    <span class="text-3xl font-black ${total >= 0 ? 'text-theme-600' : 'text-red-500'} tracking-tight">
+                                    <span class="text-3xl font-black ${total >= 0 ? 'text-theme-600 dark:text-theme-400' : 'text-red-500'} tracking-tight">
                                         ${total > 0 ? '+' : ''}${total.toLocaleString()}
                                     </span>
                                     <span class="text-sm font-bold text-gray-400">TWD</span>
@@ -1244,14 +1232,14 @@
                         </div>
                         <div class="overflow-x-auto">
                             <table class="w-full text-left border-collapse">
-                                <thead class="bg-gray-50 text-gray-500 uppercase text-xs font-bold tracking-wider">
+                                <thead class="bg-gray-50 dark:bg-gray-900/50 text-gray-500 dark:text-gray-400 uppercase text-xs font-bold tracking-wider">
                                     <tr>
                                         <th class="py-4 px-6">${t('col_date')}</th>
                                         <th class="py-4 px-6">${t('col_item')}</th>
                                         <th class="py-4 px-6 text-right">${t('col_amount')} (TWD)</th>
                                     </tr>
                                 </thead>
-                                <tbody class="divide-y divide-gray-100">${rows}</tbody>
+                                <tbody class="divide-y divide-gray-100 dark:divide-gray-800">${rows}</tbody>
                             </table>
                         </div>
                     </div>
@@ -1261,18 +1249,18 @@
         function renderMailboxes() {
             return `
                 <div class="max-w-5xl mx-auto">
-                    <h1 class="text-3xl font-black mb-10 text-center text-theme-600 tracking-tight">${t('mailboxes')}</h1>
+                    <h1 class="text-3xl font-black mb-10 text-center text-theme-600 dark:text-theme-400 tracking-tight">${t('mailboxes')}</h1>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div class="bg-white p-10 rounded-3xl shadow-xl hover:shadow-2xl transition-all border-t-[8px] border-blue-500 flex flex-col items-center text-center transform hover:-translate-y-2 duration-300 group">
-                            <div class="bg-blue-50 p-6 rounded-full mb-6 group-hover:scale-110 transition-transform duration-300"><i data-lucide="scale" class="w-12 h-12 text-blue-500"></i></div>
-                            <h2 class="text-2xl font-black mb-3 text-slate-800 tracking-tight">${t('rightsMailbox')}</h2>
-                            <p class="text-gray-500 mb-8 flex-grow leading-relaxed max-w-sm">${t('rightsDesc')}</p>
+                        <div class="bg-white dark:bg-gray-800 p-10 rounded-3xl shadow-xl hover:shadow-2xl transition-all border-t-[8px] border-blue-500 flex flex-col items-center text-center transform hover:-translate-y-2 duration-300 group">
+                            <div class="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-full mb-6 group-hover:scale-110 transition-transform duration-300"><i data-lucide="scale" class="w-12 h-12 text-blue-500"></i></div>
+                            <h2 class="text-2xl font-black mb-3 dark:text-white tracking-tight">${t('rightsMailbox')}</h2>
+                            <p class="text-gray-500 dark:text-gray-400 mb-8 flex-grow leading-relaxed max-w-sm">${t('rightsDesc')}</p>
                             <a href="https://forms.gle/HAxbZJCiCEFhVkwV6" target="_blank" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 rounded-xl transition flex justify-center items-center gap-2 shadow-lg shadow-blue-500/30 transform active:scale-95 text-lg">${t('goToForm')} <i data-lucide="arrow-right" class="w-5 h-5"></i></a>
                         </div>
-                        <div class="bg-white p-10 rounded-3xl shadow-xl hover:shadow-2xl transition-all border-t-[8px] border-pink-500 flex flex-col items-center text-center transform hover:-translate-y-2 duration-300 group">
-                            <div class="bg-pink-50 p-6 rounded-full mb-6 group-hover:scale-110 transition-transform duration-300"><i data-lucide="ghost" class="w-12 h-12 text-pink-500"></i></div>
-                            <h2 class="text-2xl font-black mb-3 text-slate-800 tracking-tight">${t('anonMailbox')}</h2>
-                            <p class="text-gray-500 mb-8 flex-grow leading-relaxed max-w-sm">${t('anonDesc')}</p>
+                        <div class="bg-white dark:bg-gray-800 p-10 rounded-3xl shadow-xl hover:shadow-2xl transition-all border-t-[8px] border-pink-500 flex flex-col items-center text-center transform hover:-translate-y-2 duration-300 group">
+                            <div class="bg-pink-50 dark:bg-pink-900/20 p-6 rounded-full mb-6 group-hover:scale-110 transition-transform duration-300"><i data-lucide="ghost" class="w-12 h-12 text-pink-500"></i></div>
+                            <h2 class="text-2xl font-black mb-3 dark:text-white tracking-tight">${t('anonMailbox')}</h2>
+                            <p class="text-gray-500 dark:text-gray-400 mb-8 flex-grow leading-relaxed max-w-sm">${t('anonDesc')}</p>
                             <a href="https://forms.gle/L8v7cPxDGP8wfYnJ6" target="_blank" class="w-full bg-pink-500 hover:bg-pink-600 text-white font-bold py-4 rounded-xl transition flex justify-center items-center gap-2 shadow-lg shadow-pink-500/30 transform active:scale-95 text-lg">${t('goToForm')} <i data-lucide="arrow-right" class="w-5 h-5"></i></a>
                         </div>
                     </div>
@@ -1281,80 +1269,80 @@
         
         function renderClubs() {
             const clubList = APP_DATA.clubs.map(c => `
-                <div class="bg-white rounded-3xl shadow-md p-8 flex flex-col items-center text-center hover:shadow-2xl transition-all duration-300 group border border-gray-100 hover:border-theme-300 relative overflow-hidden">
-                    <div class="absolute inset-0 bg-gradient-to-b from-transparent to-gray-50 opacity-0 group-hover:opacity-100 transition duration-500"></div>
-                    <div class="w-36 h-36 rounded-full overflow-hidden mb-6 border-8 border-gray-50 shadow-inner group-hover:border-theme-100 transition-colors duration-300 flex items-center justify-center bg-white relative z-10">
+                <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-md p-8 flex flex-col items-center text-center hover:shadow-2xl transition-all duration-300 group border border-gray-100 dark:border-gray-700 hover:border-theme-300 relative overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-b from-transparent to-gray-50 dark:to-gray-700/30 opacity-0 group-hover:opacity-100 transition duration-500"></div>
+                    <div class="w-36 h-36 rounded-full overflow-hidden mb-6 border-8 border-gray-50 dark:border-gray-700 shadow-inner group-hover:border-theme-100 transition-colors duration-300 flex items-center justify-center bg-white dark:bg-gray-800 relative z-10">
                         <div class="w-full h-full flex items-center justify-center text-7xl select-none group-hover:scale-110 group-hover:rotate-12 transition duration-500">
                             ${c.emoji}
                         </div>
                     </div>
-                    <span class="text-[10px] font-bold bg-gray-100 px-3 py-1 rounded-full text-gray-500 mb-3 tracking-widest uppercase relative z-10">${c.category}</span>
-                    <h3 class="font-black text-slate-800 text-xl mb-6 relative z-10 tracking-tight">${val(c, 'name')}</h3>
-                    <a href="${c.ig}" target="_blank" class="w-full py-2.5 rounded-xl bg-gray-50 text-gray-600 hover:bg-gradient-to-r hover:from-purple-500 hover:to-pink-500 hover:text-white transition-all flex items-center justify-center gap-2 font-bold group-hover:shadow-md relative z-10">
+                    <span class="text-[10px] font-bold bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full text-gray-500 dark:text-gray-300 mb-3 tracking-widest uppercase relative z-10">${c.category}</span>
+                    <h3 class="font-black dark:text-white text-xl mb-6 relative z-10 tracking-tight">${val(c, 'name')}</h3>
+                    <a href="${c.ig}" target="_blank" class="w-full py-2.5 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gradient-to-r hover:from-purple-500 hover:to-pink-500 hover:text-white transition-all flex items-center justify-center gap-2 font-bold group-hover:shadow-md relative z-10">
                         <i data-lucide="instagram" class="w-4 h-4"></i> Follow
                     </a>
                 </div>
             `).join('');
-            return `<h1 class="text-3xl font-black mb-10 text-theme-600 text-center tracking-tight">${t('clubTitle')}</h1><div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 px-4">${clubList}</div>`;
+            return `<h1 class="text-3xl font-black mb-10 text-theme-600 dark:text-theme-400 text-center tracking-tight">${t('clubTitle')}</h1><div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 px-4">${clubList}</div>`;
         }
 
         function renderDownloads() {
             const list = APP_DATA.downloads.map(d => `
-                <div class="bg-white p-6 rounded-2xl shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between border border-gray-100 hover:border-theme-400 hover:shadow-lg transition-all group gap-4">
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between border border-gray-100 dark:border-gray-700 hover:border-theme-400 hover:shadow-lg transition-all group gap-4">
                     <div class="flex items-center gap-5">
-                        <div class="bg-theme-50 p-4 rounded-2xl text-theme-600 group-hover:bg-theme-500 group-hover:text-white transition duration-300"><i data-lucide="file-text" class="w-6 h-6"></i></div>
+                        <div class="bg-theme-50 dark:bg-theme-900/30 p-4 rounded-2xl text-theme-600 dark:text-theme-400 group-hover:bg-theme-500 group-hover:text-white transition duration-300"><i data-lucide="file-text" class="w-6 h-6"></i></div>
                         <div>
-                            <h3 class="font-bold text-lg text-slate-800 group-hover:text-theme-600 transition-colors">${val(d, 'title')}</h3>
+                            <h3 class="font-bold text-lg dark:text-white group-hover:text-theme-600 dark:group-hover:text-theme-400 transition-colors">${val(d, 'title')}</h3>
                             <div class="flex items-center gap-2 mt-1">
-                                <span class="text-xs font-mono text-gray-400 bg-gray-100 px-2 py-0.5 rounded">${d.date}</span>
+                                <span class="text-xs font-mono text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded">${d.date}</span>
                                 <span class="text-xs text-gray-400 font-medium">• ${isEn() ? d.type : (d.type==='Academic'?'教務':d.type==='Event'?'活動':'其他')}</span>
                             </div>
                         </div>
                     </div>
-                    <a href="${d.file}" target="_blank" class="w-full sm:w-auto bg-gray-50 hover:bg-theme-500 hover:text-white text-gray-600 px-6 py-3 rounded-xl transition font-bold flex items-center justify-center gap-2 group-hover:shadow-md">
+                    <a href="${d.file}" target="_blank" class="w-full sm:w-auto bg-gray-50 dark:bg-gray-700 hover:bg-theme-500 hover:text-white text-gray-600 dark:text-gray-300 px-6 py-3 rounded-xl transition font-bold flex items-center justify-center gap-2 group-hover:shadow-md">
                         <span class="hidden sm:inline">${t('download_btn')}</span> <i data-lucide="download" class="w-4 h-4"></i>
                     </a>
                 </div>
             `).join('');
             return `
                 <div class="max-w-4xl mx-auto">
-                    <h1 class="text-3xl font-black mb-8 text-center text-theme-600 tracking-tight">${t('downloadTitle')}</h1>
+                    <h1 class="text-3xl font-black mb-8 text-center text-theme-600 dark:text-theme-400 tracking-tight">${t('downloadTitle')}</h1>
                     <div class="space-y-4 animate-fade-in">${list}</div>
                 </div>`;
         }
 
         function renderContact() {
             return `
-                <div class="max-w-3xl mx-auto bg-white p-10 rounded-3xl shadow-xl border border-gray-100 relative overflow-hidden">
-                    <div class="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-theme-100 rounded-full blur-2xl"></div>
+                <div class="max-w-3xl mx-auto bg-white dark:bg-gray-800 p-10 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-theme-100 dark:bg-theme-900/30 rounded-full blur-2xl"></div>
                     
-                    <h1 class="text-3xl font-black mb-8 text-center text-theme-600 tracking-tight relative z-10">${t('contact')}</h1>
+                    <h1 class="text-3xl font-black mb-8 text-center text-theme-600 dark:text-theme-400 tracking-tight relative z-10">${t('contact')}</h1>
                     <div class="space-y-4 relative z-10">
-                        <a href="https://www.instagram.com/pksh.su/" target="_blank" class="flex items-center p-5 bg-gradient-to-r from-gray-50 to-white border border-gray-100 rounded-2xl hover:border-pink-300 transition-all group shadow-sm hover:shadow-md">
+                        <a href="https://www.instagram.com/pksh.su/" target="_blank" class="flex items-center p-5 bg-gradient-to-r from-gray-50 to-white dark:from-gray-700 dark:to-gray-800 border border-gray-100 dark:border-gray-600 rounded-2xl hover:border-pink-300 transition-all group shadow-sm hover:shadow-md">
                             <div class="bg-white p-3 rounded-xl shadow-sm group-hover:scale-110 transition-transform mr-5">
                                 <i data-lucide="instagram" class="w-8 h-8 text-pink-500"></i>
                             </div>
                             <div>
-                                <h3 class="font-bold text-xl text-slate-800 group-hover:text-pink-500 transition-colors">Instagram</h3>
-                                <p class="text-sm text-gray-500 font-mono mt-0.5">@pksh.su</p>
+                                <h3 class="font-bold text-xl dark:text-white group-hover:text-pink-500 transition-colors">Instagram</h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 font-mono mt-0.5">@pksh.su</p>
                             </div>
                             <i data-lucide="arrow-right" class="ml-auto w-5 h-5 text-gray-300 group-hover:text-pink-500 group-hover:translate-x-1 transition-all"></i>
                         </a>
                         
-                        <a href="mailto:pkshsu@pksh.ylc.edu.tw" class="flex items-center p-5 bg-gradient-to-r from-gray-50 to-white border border-gray-100 rounded-2xl hover:border-theme-300 transition-all group shadow-sm hover:shadow-md">
+                        <a href="mailto:pkshsu@pksh.ylc.edu.tw" class="flex items-center p-5 bg-gradient-to-r from-gray-50 to-white dark:from-gray-700 dark:to-gray-800 border border-gray-100 dark:border-gray-600 rounded-2xl hover:border-theme-300 transition-all group shadow-sm hover:shadow-md">
                             <div class="bg-white p-3 rounded-xl shadow-sm group-hover:scale-110 transition-transform mr-5">
                                 <i data-lucide="mail" class="w-8 h-8 text-theme-500"></i>
                             </div>
                             <div>
-                                <h3 class="font-bold text-xl text-slate-800 group-hover:text-theme-600 transition-colors">Email</h3>
-                                <p class="text-sm text-gray-500 font-mono mt-0.5">pkshsu@pksh.ylc.edu.tw</p>
+                                <h3 class="font-bold text-xl dark:text-white group-hover:text-theme-600 transition-colors">Email</h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 font-mono mt-0.5">pkshsu@pksh.ylc.edu.tw</p>
                             </div>
                             <i data-lucide="arrow-right" class="ml-auto w-5 h-5 text-gray-300 group-hover:text-theme-500 group-hover:translate-x-1 transition-all"></i>
                         </a>
                     </div>
                     
-                    <div class="pt-8 mt-8 border-t border-gray-100 text-center">
-                        <button onclick="navigate('admin')" class="text-xs font-bold text-gray-400 hover:text-theme-500 flex items-center justify-center transition mx-auto gap-1 py-2 px-4 rounded-full hover:bg-gray-50">
+                    <div class="pt-8 mt-8 border-t border-gray-100 dark:border-gray-700 text-center">
+                        <button onclick="navigate('admin')" class="text-xs font-bold text-gray-400 hover:text-theme-500 flex items-center justify-center transition mx-auto gap-1 py-2 px-4 rounded-full hover:bg-gray-50 dark:hover:bg-gray-700/50">
                             <i data-lucide="shield" class="w-3 h-3"></i> ${t('admin')}
                         </button>
                     </div>
@@ -1364,13 +1352,13 @@
 
         function renderMeetings() {
             const list = APP_DATA.meetings.length ? APP_DATA.meetings.map(m => `
-                <div class="flex items-center justify-between bg-white p-5 rounded-2xl shadow-sm hover:bg-gray-50 transition-all cursor-pointer border border-gray-100 hover:border-theme-300 group">
+                <div class="flex items-center justify-between bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all cursor-pointer border border-gray-100 dark:border-gray-700 hover:border-theme-300 group">
                     <div class="flex items-center gap-5">
-                        <div class="bg-gray-100 p-3 rounded-xl text-gray-500 group-hover:bg-theme-500 group-hover:text-white transition-colors">
+                        <div class="bg-gray-100 dark:bg-gray-700 p-3 rounded-xl text-gray-500 dark:text-gray-300 group-hover:bg-theme-500 group-hover:text-white transition-colors">
                             <i data-lucide="file-text" class="w-6 h-6"></i>
                         </div>
                         <div>
-                            <h3 class="font-bold text-slate-800 text-lg group-hover:text-theme-600 transition-colors">${val(m, 'title')}</h3>
+                            <h3 class="font-bold dark:text-white text-lg group-hover:text-theme-600 transition-colors">${val(m, 'title')}</h3>
                             <p class="text-xs text-gray-400 font-mono mt-1">${m.date}</p>
                         </div>
                     </div>
@@ -1378,10 +1366,10 @@
                         Open PDF
                     </a>
                 </div>
-            `).join('') : `<div class="text-center py-20 bg-gray-50 rounded-3xl"><p class="text-gray-400 font-medium">暫無公開的會議記錄。</p></div>`;
+            `).join('') : `<div class="text-center py-20 bg-gray-50 dark:bg-gray-800/50 rounded-3xl"><p class="text-gray-400 font-medium">暫無公開的會議記錄。</p></div>`;
             return `
                 <div class="max-w-3xl mx-auto">
-                    <h1 class="text-3xl font-black mb-8 text-theme-600 text-center tracking-tight">${t('meetingTitle')}</h1>
+                    <h1 class="text-3xl font-black mb-8 text-theme-600 dark:text-theme-400 text-center tracking-tight">${t('meetingTitle')}</h1>
                     <div class="space-y-4 animate-fade-in">${list}</div>
                 </div>`;
         }
@@ -1391,17 +1379,17 @@
             if (!APP_STATE.user) {
                 // Login Form
                 return `
-                    <div class="max-w-sm mx-auto bg-white p-10 rounded-3xl shadow-2xl border border-gray-100 mt-20 relative overflow-hidden">
+                    <div class="max-w-sm mx-auto bg-white dark:bg-gray-800 p-10 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-700 mt-20 relative overflow-hidden">
                         <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-theme-400 to-blue-500"></div>
-                        <h1 class="text-3xl font-black mb-8 text-slate-800 text-center tracking-tight">${t('login_title')}</h1>
+                        <h1 class="text-3xl font-black mb-8 dark:text-white text-center tracking-tight">${t('login_title')}</h1>
                         <form onsubmit="handleLogin(event)" class="space-y-6">
                             <div>
-                                <label class="block text-xs font-bold mb-2 text-gray-500 uppercase tracking-widest">${t('login_email')}</label>
-                                <input type="email" id="admin-email" required class="w-full p-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-theme-500 focus:border-transparent transition-all shadow-inner" placeholder="admin@pksh.su">
+                                <label class="block text-xs font-bold mb-2 dark:text-gray-300 uppercase tracking-widest text-gray-500">${t('login_email')}</label>
+                                <input type="email" id="admin-email" required class="w-full p-3.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl dark:text-white focus:outline-none focus:ring-2 focus:ring-theme-500 focus:border-transparent transition-all shadow-inner" placeholder="admin@pksh.su">
                             </div>
                             <div>
-                                <label class="block text-xs font-bold mb-2 text-gray-500 uppercase tracking-widest">${t('login_pwd')}</label>
-                                <input type="password" id="admin-pwd" required class="w-full p-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-theme-500 focus:border-transparent transition-all shadow-inner" placeholder="••••••••">
+                                <label class="block text-xs font-bold mb-2 dark:text-gray-300 uppercase tracking-widest text-gray-500">${t('login_pwd')}</label>
+                                <input type="password" id="admin-pwd" required class="w-full p-3.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl dark:text-white focus:outline-none focus:ring-2 focus:ring-theme-500 focus:border-transparent transition-all shadow-inner" placeholder="••••••••">
                             </div>
                             <button type="submit" class="w-full bg-gradient-to-r from-theme-500 to-theme-700 text-white py-4 rounded-xl hover:shadow-lg hover:scale-[1.02] active:scale-95 transition-all font-bold text-lg shadow-theme-500/30">${t('login_btn')}</button>
                         </form>
@@ -1411,21 +1399,21 @@
                 const tab = APP_STATE.adminTab;
                 let contentHtml = '';
 
-                const inputStyle = "w-full p-3 rounded-xl border border-gray-200 bg-white focus:ring-2 focus:ring-theme-500 focus:outline-none transition-shadow";
-                const labelStyle = "block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5 ml-1";
+                const inputStyle = "w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white focus:ring-2 focus:ring-theme-500 focus:outline-none transition-shadow";
+                const labelStyle = "block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1";
                 const btnStyle = "bg-theme-500 hover:bg-theme-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all active:scale-95 w-full md:w-auto";
                 
                 if (tab === 'news') {
                     const list = APP_DATA.announcements.filter(a => a.id && !a.id.startsWith('static_')).map(a => `
-                         <div class="flex justify-between items-center bg-gray-50 p-4 rounded-xl border border-gray-100 group hover:border-theme-200 transition mb-3">
-                            <div><p class="font-bold text-slate-800">${a.title_zh}</p><span class="text-xs text-gray-400 font-mono">${a.date}</span></div>
+                         <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-900 p-4 rounded-xl border border-gray-100 dark:border-gray-700 group hover:border-theme-200 transition mb-3">
+                            <div><p class="font-bold dark:text-white">${a.title_zh}</p><span class="text-xs text-gray-400 font-mono">${a.date}</span></div>
                             <button onclick="deleteItem('announcements', '${a.id}')" class="text-gray-400 hover:text-red-500 p-2 hover:bg-red-50 rounded-lg transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                          </div>
                     `).join('');
                     contentHtml = `
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
-                            <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-                                <h3 class="font-bold mb-6 text-xl text-slate-800 flex items-center gap-2"><i data-lucide="plus-circle" class="text-theme-500"></i> 新增公告</h3>
+                            <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
+                                <h3 class="font-bold mb-6 text-xl dark:text-white flex items-center gap-2"><i data-lucide="plus-circle" class="text-theme-500"></i> 新增公告</h3>
                                 <div class="space-y-4">
                                     <div><label class="${labelStyle}">日期</label><input id="news-date" type="date" class="${inputStyle}"></div>
                                     <div><label class="${labelStyle}">中文標題</label><input id="news-title-zh" class="${inputStyle}" placeholder="輸入標題..."></div>
@@ -1441,8 +1429,8 @@
                                     <button onclick="addNews()" class="${btnStyle} mt-2 w-full"><i data-lucide="save" class="inline w-4 h-4 mr-2"></i> 發布公告</button>
                                 </div>
                             </div>
-                            <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col h-[600px]">
-                                <h3 class="font-bold mb-4 text-xl text-slate-800">已發布列表</h3>
+                            <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col h-[600px]">
+                                <h3 class="font-bold mb-4 text-xl dark:text-white">已發布列表</h3>
                                 <div class="overflow-y-auto flex-grow pr-2 space-y-1 custom-scrollbar">${list || `<div class="h-full flex items-center justify-center text-gray-400">暫無資料</div>`}</div>
                             </div>
                         </div>
@@ -1450,15 +1438,15 @@
                 }
                 else if (tab === 'events') {
                      const list = APP_DATA.events.filter(e => e.id && !e.id.startsWith('e')).map(e => `
-                         <div class="flex justify-between items-center bg-gray-50 p-4 rounded-xl border border-gray-100 group hover:border-theme-200 transition mb-3">
-                            <div><p class="font-bold text-slate-800">${e.title_zh}</p><span class="text-xs text-gray-400">${e.date} | ${e.type}</span></div>
+                         <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-900 p-4 rounded-xl border border-gray-100 dark:border-gray-700 group hover:border-theme-200 transition mb-3">
+                            <div><p class="font-bold dark:text-white">${e.title_zh}</p><span class="text-xs text-gray-400">${e.date} | ${e.type}</span></div>
                             <button onclick="deleteItem('events', '${e.id}')" class="text-gray-400 hover:text-red-500 p-2 hover:bg-red-50 rounded-lg transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                          </div>
                     `).join('');
                     contentHtml = `
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
-                             <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-                                <h3 class="font-bold mb-6 text-xl text-slate-800 flex items-center gap-2"><i data-lucide="calendar-plus" class="text-theme-500"></i> 新增活動</h3>
+                             <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
+                                <h3 class="font-bold mb-6 text-xl dark:text-white flex items-center gap-2"><i data-lucide="calendar-plus" class="text-theme-500"></i> 新增活動</h3>
                                 <div class="space-y-4">
                                     <div><label class="${labelStyle}">中文名稱</label><input id="event-title-zh" class="${inputStyle}"></div>
                                     <div class="flex gap-2 items-end"><div class="flex-grow"><label class="${labelStyle}">English Title</label><input id="event-title-en" class="${inputStyle}"></div><button onclick="autoTranslate('event-title-zh', 'event-title-en')" class="h-[50px] px-4 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition"><i data-lucide="languages"></i></button></div>
@@ -1472,8 +1460,8 @@
                                     <button onclick="addEvent()" class="${btnStyle} mt-2 w-full">發布活動</button>
                                 </div>
                             </div>
-                            <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col h-[600px]">
-                                <h3 class="font-bold mb-4 text-xl text-slate-800">活動列表</h3>
+                            <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col h-[600px]">
+                                <h3 class="font-bold mb-4 text-xl dark:text-white">活動列表</h3>
                                 <div class="overflow-y-auto flex-grow pr-2 custom-scrollbar">${list || `<div class="h-full flex items-center justify-center text-gray-400">暫無資料</div>`}</div>
                             </div>
                         </div>
@@ -1481,12 +1469,12 @@
                 }
                 else if (tab === 'photos') {
                     const list = APP_DATA.photos ? APP_DATA.photos.map(p => `
-                        <div class="flex justify-between items-center bg-gray-50 p-3 rounded-xl border border-gray-100 mb-3">
+                        <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-900 p-3 rounded-xl border border-gray-100 dark:border-gray-700 mb-3">
                             <div class="flex items-center gap-4">
                                 <img src="${p.url}" class="w-12 h-12 object-cover rounded-lg">
                                 <div>
-                                    <p class="font-bold text-slate-800 text-sm truncate w-32">${p.title_zh}</p>
-                                    <p class="text-[10px] text-gray-400 bg-gray-100 px-1 rounded inline-block">${p.album || '未分類'}</p>
+                                    <p class="font-bold dark:text-white text-sm truncate w-32">${p.title_zh}</p>
+                                    <p class="text-[10px] text-gray-400 bg-gray-100 dark:bg-gray-800 px-1 rounded inline-block">${p.album || '未分類'}</p>
                                 </div>
                             </div>
                             <button onclick="deleteItem('photos', '${p.id}')" class="text-gray-400 hover:text-red-500 p-2 hover:bg-red-50 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
@@ -1494,8 +1482,8 @@
                     `).join('') : '';
                     contentHtml = `
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
-                            <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-                                <h3 class="font-bold mb-6 text-xl text-slate-800 flex items-center gap-2"><i data-lucide="image-plus" class="text-theme-500"></i> 新增照片</h3>
+                            <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
+                                <h3 class="font-bold mb-6 text-xl dark:text-white flex items-center gap-2"><i data-lucide="image-plus" class="text-theme-500"></i> 新增照片</h3>
                                 <div class="space-y-4">
                                     <div><label class="${labelStyle}">圖片網址 (URL)</label><input id="photo-url" class="${inputStyle}" placeholder="https://..."></div>
                                     <div><label class="${labelStyle}">中文標題</label><input id="photo-title-zh" class="${inputStyle}"></div>
@@ -1507,8 +1495,8 @@
                                     <button onclick="addPhoto()" class="${btnStyle} mt-2 w-full">新增照片</button>
                                 </div>
                             </div>
-                            <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col h-[600px]">
-                                <h3 class="font-bold mb-4 text-xl text-slate-800">照片列表</h3>
+                            <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col h-[600px]">
+                                <h3 class="font-bold mb-4 text-xl dark:text-white">照片列表</h3>
                                 <div class="overflow-y-auto flex-grow pr-2 custom-scrollbar">${list || `<div class="h-full flex items-center justify-center text-gray-400">暫無資料</div>`}</div>
                             </div>
                         </div>
@@ -1516,15 +1504,15 @@
                 }
                 else if (tab === 'finance') {
                     const list = APP_DATA.finance.map(f => `
-                        <div class="flex justify-between items-center bg-gray-50 p-4 rounded-xl border border-gray-100 mb-3">
-                            <div><p class="font-bold text-slate-800">${f.item_zh}</p><span class="text-xs text-gray-400">${f.date} | $${f.amount}</span></div>
+                        <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-900 p-4 rounded-xl border border-gray-100 dark:border-gray-700 mb-3">
+                            <div><p class="font-bold dark:text-white">${f.item_zh}</p><span class="text-xs text-gray-400">${f.date} | $${f.amount}</span></div>
                             <button onclick="deleteItem('finance', '${f.id}')" class="text-gray-400 hover:text-red-500 p-2 hover:bg-red-50 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                         </div>
                     `).join('');
                     contentHtml = `
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
-                            <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-                                <h3 class="font-bold mb-6 text-xl text-slate-800 flex items-center gap-2"><i data-lucide="dollar-sign" class="text-theme-500"></i> 新增收支</h3>
+                            <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
+                                <h3 class="font-bold mb-6 text-xl dark:text-white flex items-center gap-2"><i data-lucide="dollar-sign" class="text-theme-500"></i> 新增收支</h3>
                                 <div class="space-y-4">
                                     <div><label class="${labelStyle}">日期</label><input id="fin-date" type="date" class="${inputStyle}"></div>
                                     <div><label class="${labelStyle}">中文項目名稱</label><input id="fin-item-zh" class="${inputStyle}"></div>
@@ -1539,8 +1527,8 @@
                                     <button onclick="addFinance()" class="${btnStyle} mt-2 w-full">新增紀錄</button>
                                 </div>
                             </div>
-                            <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col h-[600px]">
-                                <h3 class="font-bold mb-4 text-xl text-slate-800">財務列表</h3>
+                            <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col h-[600px]">
+                                <h3 class="font-bold mb-4 text-xl dark:text-white">財務列表</h3>
                                 <div class="overflow-y-auto flex-grow pr-2 custom-scrollbar">${list}</div>
                             </div>
                         </div>
@@ -1548,15 +1536,15 @@
                 }
                 else if (tab === 'meetings') {
                      const list = APP_DATA.meetings.map(m => `
-                        <div class="flex justify-between items-center bg-gray-50 p-4 rounded-xl border border-gray-100 mb-3">
-                            <div><p class="font-bold text-slate-800">${m.title_zh}</p><span class="text-xs text-gray-400">${m.date}</span></div>
+                        <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-900 p-4 rounded-xl border border-gray-100 dark:border-gray-700 mb-3">
+                            <div><p class="font-bold dark:text-white">${m.title_zh}</p><span class="text-xs text-gray-400">${m.date}</span></div>
                             <button onclick="deleteItem('meetings', '${m.id}')" class="text-gray-400 hover:text-red-500 p-2 hover:bg-red-50 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                         </div>
                     `).join('');
                     contentHtml = `
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
-                            <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-                                <h3 class="font-bold mb-6 text-xl text-slate-800 flex items-center gap-2"><i data-lucide="file-plus" class="text-theme-500"></i> 上傳會議記錄</h3>
+                            <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
+                                <h3 class="font-bold mb-6 text-xl dark:text-white flex items-center gap-2"><i data-lucide="file-plus" class="text-theme-500"></i> 上傳會議記錄</h3>
                                 <div class="space-y-4">
                                     <div><label class="${labelStyle}">日期</label><input id="mt-date" type="date" class="${inputStyle}"></div>
                                     <div><label class="${labelStyle}">中文標題</label><input id="mt-title-zh" class="${inputStyle}"></div>
@@ -1568,8 +1556,8 @@
                                     <button onclick="addMeeting()" class="${btnStyle} mt-2 w-full">發布紀錄</button>
                                 </div>
                             </div>
-                            <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col h-[600px]">
-                                <h3 class="font-bold mb-4 text-xl text-slate-800">記錄列表</h3>
+                            <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col h-[600px]">
+                                <h3 class="font-bold mb-4 text-xl dark:text-white">記錄列表</h3>
                                 <div class="overflow-y-auto flex-grow pr-2 custom-scrollbar">${list}</div>
                             </div>
                         </div>
@@ -1577,15 +1565,15 @@
                 }
                 else if (tab === 'downloads') {
                      const list = APP_DATA.downloads.map(d => `
-                        <div class="flex justify-between items-center bg-gray-50 p-4 rounded-xl border border-gray-100 mb-3">
-                            <div><p class="font-bold text-slate-800">${d.title_zh}</p><span class="text-xs text-gray-400">${d.type}</span></div>
+                        <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-900 p-4 rounded-xl border border-gray-100 dark:border-gray-700 mb-3">
+                            <div><p class="font-bold dark:text-white">${d.title_zh}</p><span class="text-xs text-gray-400">${d.type}</span></div>
                             <button onclick="deleteItem('downloads', '${d.id}')" class="text-gray-400 hover:text-red-500 p-2 hover:bg-red-50 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                         </div>
                     `).join('');
                     contentHtml = `
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
-                            <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-                                <h3 class="font-bold mb-6 text-xl text-slate-800 flex items-center gap-2"><i data-lucide="folder-plus" class="text-theme-500"></i> 新增下載資源</h3>
+                            <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
+                                <h3 class="font-bold mb-6 text-xl dark:text-white flex items-center gap-2"><i data-lucide="folder-plus" class="text-theme-500"></i> 新增下載資源</h3>
                                 <div class="space-y-4">
                                     <div><label class="${labelStyle}">日期</label><input id="dl-date" type="date" class="${inputStyle}"></div>
                                     <div><label class="${labelStyle}">中文標題</label><input id="dl-title-zh" class="${inputStyle}"></div>
@@ -1598,8 +1586,8 @@
                                     <button onclick="addDownload()" class="${btnStyle} mt-2 w-full">發布資源</button>
                                 </div>
                             </div>
-                            <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col h-[600px]">
-                                <h3 class="font-bold mb-4 text-xl text-slate-800">資源列表</h3>
+                            <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col h-[600px]">
+                                <h3 class="font-bold mb-4 text-xl dark:text-white">資源列表</h3>
                                 <div class="overflow-y-auto flex-grow pr-2 custom-scrollbar">${list}</div>
                             </div>
                         </div>
@@ -1613,8 +1601,8 @@
                     const currentSize = SYSTEM_SETTINGS.marqueeSize || 'text-xs';
 
                     contentHtml = `
-                        <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 max-w-2xl mx-auto">
-                            <h3 class="font-bold mb-6 text-xl text-slate-800 flex items-center gap-2"><i data-lucide="settings" class="text-theme-500"></i> 系統全域設定</h3>
+                        <div class="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 max-w-2xl mx-auto">
+                            <h3 class="font-bold mb-6 dark:text-white text-xl flex items-center gap-2"><i data-lucide="settings" class="text-theme-500"></i> 系統全域設定</h3>
                             
                             <div class="mb-8">
                                 <label class="${labelStyle}">首頁跑馬燈內容</label>
@@ -1643,15 +1631,15 @@
                 }
 
                 const navBtn = (key, icon, label) => `
-                    <button onclick="switchAdminTab('${key}')" class="text-left px-4 py-3 rounded-xl transition-all flex items-center gap-3 font-bold ${tab===key ? 'bg-theme-500 text-white shadow-md' : 'text-gray-500 hover:bg-gray-100'}">
+                    <button onclick="switchAdminTab('${key}')" class="text-left px-4 py-3 rounded-xl transition-all flex items-center gap-3 font-bold ${tab===key ? 'bg-theme-500 text-white shadow-md' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'}">
                         <i data-lucide="${icon}" class="w-5 h-5"></i> ${label}
                     </button>
                 `;
                 return `
-                    <div class="bg-white rounded-[2rem] shadow-2xl flex flex-col md:flex-row overflow-hidden border border-gray-100 min-h-[80vh]">
-                        <div class="w-full md:w-64 bg-gray-50 p-6 flex flex-col gap-1 border-r border-gray-100">
+                    <div class="bg-white dark:bg-gray-900 rounded-[2rem] shadow-2xl flex flex-col md:flex-row overflow-hidden border border-gray-100 dark:border-gray-800 min-h-[80vh]">
+                        <div class="w-full md:w-64 bg-gray-50 dark:bg-gray-950 p-6 flex flex-col gap-1 border-r border-gray-100 dark:border-gray-800">
                             <div class="mb-8 px-2">
-                                <h2 class="text-2xl font-black text-theme-600 tracking-tight">${t('admin_dashboard')}</h2>
+                                <h2 class="text-2xl font-black text-theme-600 dark:text-theme-400 tracking-tight">${t('admin_dashboard')}</h2>
                                 <p class="text-xs text-gray-400 mt-1 truncate font-mono">${APP_STATE.user.email}</p>
                             </div>
                             ${navBtn('news', 'bell', t('admin_news'))}
@@ -1662,13 +1650,13 @@
                             ${navBtn('downloads', 'download', t('admin_downloads'))}
                             ${navBtn('system', 'settings', t('admin_system'))}
                             
-                            <div class="mt-auto pt-6 border-t border-gray-200">
-                                <button onclick="handleLogout()" class="w-full text-left px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 font-bold transition flex items-center gap-3">
+                            <div class="mt-auto pt-6 border-t border-gray-200 dark:border-gray-800">
+                                <button onclick="handleLogout()" class="w-full text-left px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 font-bold transition flex items-center gap-3">
                                     <i data-lucide="log-out" class="w-5 h-5"></i> ${t('admin_logout')}
                                 </button>
                             </div>
                         </div>
-                        <div class="flex-grow p-8 bg-white overflow-y-auto">
+                        <div class="flex-grow p-8 bg-white dark:bg-gray-900 overflow-y-auto">
                             ${contentHtml}
                         </div>
                     </div>
@@ -1683,8 +1671,8 @@
             
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 const isActive = btn.dataset.key === view;
-                if(isActive) btn.classList.add('bg-theme-50', 'text-theme-600');
-                else btn.classList.remove('bg-theme-50', 'text-theme-600');
+                if(isActive) btn.classList.add('bg-theme-50', 'dark:bg-theme-900/30', 'text-theme-600', 'dark:text-theme-400');
+                else btn.classList.remove('bg-theme-50', 'dark:bg-theme-900/30', 'text-theme-600', 'dark:text-theme-400');
             });
             updateMarquee();
             
@@ -1726,6 +1714,12 @@
             const searchInput = document.getElementById('search-input');
             if(searchInput) searchInput.placeholder = t('searchPlaceholder');
             render();
+        };
+        window.toggleDarkMode = () => {
+            APP_STATE.darkMode = !APP_STATE.darkMode;
+            document.documentElement.classList.toggle('dark');
+            document.getElementById('dark-icon').classList.toggle('hidden');
+            document.getElementById('light-icon').classList.toggle('hidden');
         };
 
         document.getElementById('menu-button').addEventListener('click', () => {
