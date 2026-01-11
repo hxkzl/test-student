@@ -74,14 +74,14 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        /* [核心] 導覽列防爆設定 */
+        /* [核心] 導覽列防爆設定 - 強制橫向滑動不換行 */
         .nav-scroll-container {
             display: flex;
             flex-wrap: nowrap;
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
             scrollbar-width: none; /* Firefox */
-            gap: 0.25rem;
+            gap: 0.25rem; /* 維持小間距確保放得下 */
             height: 100%;
             align-items: center;
             padding: 0 0.5rem;
@@ -993,7 +993,7 @@
                     </div>
 
                     <div class="space-y-6">
-                        <div class="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 sticky top-28 overflow-hidden hover-lift">
+                        <div class="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden hover-lift">
                             <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-theme-400 to-blue-500"></div>
                             ${nextEventHtml}
                         </div>
@@ -1072,7 +1072,7 @@
                 const currentAlbumName = APP_STATE.activeAlbum;
                 const albumPhotos = photos.filter(p => (p.album || '未分類') === currentAlbumName);
                 
-                // [FIXED] Updated onClick to just pass index
+                // [FIXED] onClick now just passes index, openLightbox handles the rest
                 // [IMPROVED] Use CSS columns for masonry layout effect
                 const photoHtml = albumPhotos.map((p, idx) => `
                     <div class="break-inside-avoid mb-6 cursor-zoom-in group relative overflow-hidden rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700" onclick="openLightbox(${idx})">
