@@ -1648,4 +1648,66 @@
                 if(el.dataset.key && I18N[APP_STATE.lang][el.dataset.key]) el.innerText = I18N[APP_STATE.lang][el.dataset.key];
             });
             const routes = {
-                'home': renderHome, 'events':
+                'home': renderHome, 'events':'events': renderEvents, 
+                'mailboxes': renderMailboxes,
+                'gallery': renderGallery,
+                'clubs': renderClubs, 
+                'downloads': renderDownloads,
+                'finance': renderFinance, 
+                'meetings': renderMeetings, 
+                'org': renderOrg, 
+                'contact': renderContact, 
+                'admin': renderAdmin
+            };
+
+            // 安全渲染
+            try {
+                container.innerHTML = routes[view] ? routes[view]() : renderHome();
+            } catch (e) {
+                console.error("Render Error:", e);
+                container.innerHTML = `<div class="p-10 text-center text-red-500">頁面載入錯誤，請稍後再試。<br><small>${e.message}</small></div>`;
+            }
+            
+            lucide.createIcons();
+            window.scrollTo(0,0);
+        }
+
+        window.navigate = (view) => {
+            APP_STATE.view = view;
+            APP_STATE.eventFilter = 'All';
+            APP_STATE.galleryView = 'albums';
+            document.getElementById('mobile-menu').classList.add('hidden');
+            render();
+        };
+
+        window.toggleLang = () => {
+            APP_STATE.lang = APP_STATE.lang === 'zh' ? 'en' : 'zh';
+            document.getElementById('lang-display').innerText = APP_STATE.lang.toUpperCase();
+            const searchInput = document.getElementById('search-input');
+            if(searchInput) searchInput.placeholder = t('searchPlaceholder');
+            render();
+        };
+
+        window.toggleDarkMode = () => {
+            APP_STATE.darkMode = !APP_STATE.darkMode;
+            document.documentElement.classList.toggle('dark');
+            document.getElementById('dark-icon').classList.toggle('hidden');
+            document.getElementById('light-icon').classList.toggle('hidden');
+        };
+
+        // 手機版選單監聽
+        const menuBtn = document.getElementById('menu-button');
+        if(menuBtn) {
+            menuBtn.addEventListener('click', () => {
+                document.getElementById('mobile-menu').classList.toggle('hidden');
+            });
+        }
+
+        // 啟動應用程式
+        (async () => {
+            await loadDataFromFirebase();
+            render();
+        })();
+    </script>
+</body>
+</html>
