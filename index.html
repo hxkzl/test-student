@@ -11,7 +11,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
 
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.8/purify.min.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -58,6 +57,8 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.8/purify.min.js"></script>
+    
     <style>
         /* 隱藏捲軸但保留功能 */
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -90,7 +91,7 @@
         .nav-scroll-container::-webkit-scrollbar { display: none; }
         
         .nav-btn {
-            flex-shrink: 0; 
+            flex-shrink: 0;
             white-space: nowrap; 
         }
 
@@ -315,43 +316,38 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, getDocs, getDoc, setDoc, addDoc, deleteDoc, doc, serverTimestamp, query, orderBy, limit, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        // 原本的 import
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-// ... 其他 import ...
-
-// [新增] 引入 App Check
-import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check.js";
-
-// ... 原本的 Config ...
-
-const app = initializeApp(firebaseConfig);
-
-// [新增] 啟用 App Check (貼在 initializeApp 之後)
-// 注意：要把 '你的_SITE_KEY' 換成你剛剛在 reCAPTCHA 申請到的那串公鑰
-if (location.hostname !== "localhost") { // 建議只在正式站啟用
-    const appCheck = initializeAppCheck(app, {
-        provider: new ReCaptchaV3Provider('6LcZA0gsAAAAAEHxUZAjATy05QzBQKkOG1wPfEtk'),
-        isTokenAutoRefreshEnabled: true
-    });
-}
+        // [安全修正 2] 引入 App Check
+        import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check.js";
 
         // ============================================
         // ⚠️ Config (請確保這裡填入你的 Firebase Config)
         // ============================================
         const firebaseConfig = {
-            apiKey: "AIzaSyDWmy__e9_7YbhBTJNvLvGVglj-fOTFWMg",
+            apiKey: "[請修改這裡-填入你的API_KEY]", 
             authDomain: "pksh-student-council.firebaseapp.com",
             projectId: "pksh-student-council",
             storageBucket: "pksh-student-council.firebasestorage.app",
             messagingSenderId: "142500679754",
             appId: "1:142500679754:web:a758dc9a8b5ae34f9296b3"
         };
+        
         let db = null;
         let auth = null;
 
         try {
-            if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
+            if (!firebaseConfig.apiKey.includes("[請修改這裡")) {
                 const app = initializeApp(firebaseConfig);
+                
+                // [安全修正 3] 啟用 App Check
+                // 記得把下方的 '你的_RECAPTCHA_SITE_KEY' 換成你申請到的 Site Key
+                if (location.hostname !== "localhost" && !location.hostname.includes("127.0.0.1")) {
+                     const appCheck = initializeAppCheck(app, {
+                        provider: new ReCaptchaV3Provider('[請修改這裡-填入你的_RECAPTCHA_SITE_KEY]'),
+                        isTokenAutoRefreshEnabled: true
+                    });
+                    console.log("✅ App Check 已啟用");
+                }
+
                 db = getFirestore(app);
                 auth = getAuth(app);
                 console.log("✅ Firebase 連線成功！");
@@ -377,7 +373,6 @@ if (location.hostname !== "localhost") { // 建議只在正式站啟用
             ],
             events: [],
             finance: [],
-            // [NEW] 預設照片 (相簿功能升級)
             photos: [
                 { url: 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80', title_zh: '校園一隅 (範例)', title_en: 'Campus Corner', album: '校園生活' }
             ],
@@ -404,7 +399,7 @@ if (location.hostname !== "localhost") { // 建議只在正式站啟用
         let APP_DATA = JSON.parse(JSON.stringify(STATIC_DATA));
         let SYSTEM_SETTINGS = {
             marquee: '📢 歡迎來到北港高中學生會官方網站！',
-            marqueeSize: 'text-xs' // [NEW] 預設字體大小
+            marqueeSize: 'text-xs' 
         };
         const I18N = {
             zh: {
@@ -464,17 +459,13 @@ if (location.hostname !== "localhost") { // 建議只在正式站啟用
             user: null, 
             adminTab: 'news', 
             isLoading: false,
-            // [NEW] Gallery State
-            galleryView: 'albums', // 'albums' or 'photos'
+            galleryView: 'albums', 
             activeAlbum: null,
-            // [NEW] Lightbox State
             lightboxList: [],
             lightboxIndex: 0
         };
-
         const t = (key) => I18N[APP_STATE.lang][key] || key;
         const isEn = () => APP_STATE.lang === 'en';
-
         const val = (data, field) => {
             if (!data) return '';
             if (isEn()) return data[field + '_en'] || data[field + '_zh'] || data[field] || '';
@@ -482,7 +473,8 @@ if (location.hostname !== "localhost") { // 建議只在正式站啟用
         };
 
         function formatDateHelper(dateStr) {
-            let month = '??'; let day = '??';
+            let month = '??';
+            let day = '??';
             if (!dateStr) return { month, day };
             try {
                 const parts = dateStr.replace(/-/g, '/').split('/');
@@ -491,52 +483,45 @@ if (location.hostname !== "localhost") { // 建議只在正式站啟用
                 }
             } catch (e) { console.error("Date parse error", e); }
             
-            // [新增] 英文月份對照表
             if (isEn()) {
                 const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
                 const monthIndex = parseInt(month) - 1;
-                if (monthIndex >= 0 && monthIndex < 12) {
-                    month = monthNames[monthIndex];
-                }
+                if (monthIndex >= 0 && monthIndex < 12) { month = monthNames[monthIndex]; }
             }
-            
             return { month, day };
         }
 
+        // [安全修正 4] 修復 XSS 漏洞的 formatContent
         function formatContent(text) {
-    if (!text) return '';
+            if (!text) return '';
 
-    // 1. 設定：允許 iframe (為了 YouTube) 和 img，以及一些基本屬性
-    const config = {
-        ADD_TAGS: ['iframe', 'img'],
-        ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'src', 'alt', 'class', 'target'],
-    };
+            // 1. 設定 DOMPurify 允許的標籤
+            const config = {
+                ADD_TAGS: ['iframe', 'img'],
+                ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'src', 'alt', 'class', 'target'],
+            };
 
-    // 2. 先進行網址轉換 (把網址變成 HTML 字串)
-    const urlRegex = /(https?:\/\/[^\s]+)/g;
-    let processedText = text.replace(urlRegex, (url) => {
-        // YouTube 轉換
-        const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
-        if (ytMatch && ytMatch[1]) {
-            return `<div class="my-4 w-full aspect-video"><iframe src="https://www.youtube.com/embed/${ytMatch[1]}" class="w-full h-full rounded-2xl shadow-lg" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
-        }
-        // PDF 下載按鈕轉換
-        if (url.toLowerCase().endsWith('.pdf')) {
-            let filename = '下載 PDF 文件';
-            try { filename = decodeURIComponent(new URL(url).pathname.split('/').pop()); } catch(e){}
-            return `<a href="${url}" target="_blank" class="btn-link group block mt-3 w-full text-center bg-gray-100 text-blue-600 rounded-xl py-3 font-bold"><i data-lucide="file-down" class="inline-block mr-2 w-5 h-5"></i>${filename}</a>`;
-        }
-        // 圖片轉換
-        if (/\.(jpeg|jpg|gif|png)$/i.test(url)) {
-             return `<img src="${url}" class="mt-3 rounded-2xl shadow-lg max-h-80 mx-auto" alt="Image">`;
-        }
-        // 一般連結
-        return `<a href="${url}" target="_blank" class="text-theme-600 font-bold hover:underline">🔗 開啟連結</a>`;
-    });
+            // 2. 進行 URL 轉換
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            let processedText = text.replace(urlRegex, (url) => {
+                const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
+                if (ytMatch && ytMatch[1]) {
+                    return `<div class="my-4 w-full aspect-video"><iframe src="https://www.youtube.com/embed/${ytMatch[1]}" class="w-full h-full rounded-2xl shadow-lg border-2 border-white dark:border-gray-700" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
+                }
+                if (url.toLowerCase().endsWith('.pdf')) {
+                    let filename = '下載 PDF 文件';
+                    try { filename = decodeURIComponent(new URL(url).pathname.split('/').pop()); } catch(e){}
+                    return `<a href="${url}" target="_blank" class="btn-link group block mt-3 w-full text-center bg-gradient-to-r from-red-50 to-white border border-red-200 text-red-600 rounded-xl py-3.5 hover:from-red-100 hover:to-red-50 hover:shadow-md transition-all font-bold"><i data-lucide="file-down" class="inline-block mr-2 w-5 h-5 group-hover:scale-110 transition-transform"></i>${filename}</a>`;
+                }
+                if (/\.(jpeg|jpg|gif|png)$/i.test(url)) {
+                     return `<img src="${url}" class="mt-3 rounded-2xl shadow-lg max-h-80 mx-auto border-4 border-white dark:border-gray-700 hover:scale-[1.02] transition-transform" alt="Image">`;
+                }
+                return `<a href="${url}" target="_blank" class="text-theme-600 font-bold hover:text-theme-700 transition-colors inline-flex items-center gap-1 border-b-2 border-theme-200 hover:border-theme-500 pb-0.5">🔗 開啟連結 <i data-lucide="external-link" class="w-3 h-3"></i></a>`;
+            });
 
-    // 3. 最後用 DOMPurify 清洗 (消毒)，確保沒有惡意腳本
-    return DOMPurify.sanitize(processedText, config);
-}
+            // 3. 消毒
+            return DOMPurify.sanitize(processedText, config);
+        }
 
         // --- Firebase Data Handling ---
         async function loadDataFromFirebase() {
@@ -549,7 +534,6 @@ if (location.hostname !== "localhost") { // 建議只在正式站啟用
                     const d = settingsSnap.data();
                     if(Array.isArray(d.marquee)) SYSTEM_SETTINGS.marquee = d.marquee;
                     else SYSTEM_SETTINGS.marquee = d.marquee || SYSTEM_SETTINGS.marquee;
-                    // [NEW] Load Font Size
                     if(d.marqueeSize) SYSTEM_SETTINGS.marqueeSize = d.marqueeSize;
                 }
                 updateMarquee();
@@ -558,7 +542,6 @@ if (location.hostname !== "localhost") { // 建議只在正式站啟用
                 const fetchedNews = [];
                 snapNews.forEach(doc => { fetchedNews.push({ id: doc.id, ...doc.data() }); });
                 if(fetchedNews.length > 0) APP_DATA.announcements = [...fetchedNews, ...STATIC_DATA.announcements];
-                
                 const qEvents = query(collection(db, "events"), orderBy("date", "asc"));
                 const snapEvents = await getDocs(qEvents);
                 const fetchedEvents = [];
@@ -579,7 +562,6 @@ if (location.hostname !== "localhost") { // 建議只在正式站啟用
                 const fetchedMeetings = [];
                 snapMeetings.forEach(doc => fetchedMeetings.push({ id: doc.id, ...doc.data() }));
                 if(fetchedMeetings.length > 0) APP_DATA.meetings = fetchedMeetings;
-
                 const qDownloads = query(collection(db, "downloads"), orderBy("date", "desc"));
                 const snapDownloads = await getDocs(qDownloads);
                 const fetchedDownloads = [];
@@ -592,7 +574,6 @@ if (location.hostname !== "localhost") { // 建議只在正式站啟用
                 snapPhotos.forEach(doc => fetchedPhotos.push({ id: doc.id, ...doc.data() }));
                 if(fetchedPhotos.length > 0) APP_DATA.photos = fetchedPhotos;
 
-                // 確保 View 不為空
                 if(!APP_STATE.view) APP_STATE.view = 'home';
                 render();
             } catch (error) {
@@ -674,150 +655,95 @@ if (location.hostname !== "localhost") { // 建議只在正式站啟用
                     tag_zh: '公告', tag_en: 'Notice', date, timestamp: serverTimestamp()
                 });
                 Swal.fire('新增成功', '', 'success'); await loadDataFromFirebase();
-            } catch(e) { Swal.fire('錯誤', e.message, 'error');
-            }
+            } catch(e) { Swal.fire('錯誤', e.message, 'error'); }
         }
 
         window.addEvent = async () => {
             const title_zh = document.getElementById('event-title-zh').value;
             const title_en = document.getElementById('event-title-en').value;
             const date = document.getElementById('event-date').value;
-            
-            // [新增] 雙語時間欄位讀取
             const time_zh = document.getElementById('event-time-zh').value;
             const time_en = document.getElementById('event-time-en').value;
-
             const loc_zh = document.getElementById('event-loc-zh').value;
             const loc_en = document.getElementById('event-loc-en').value;
             const type = document.getElementById('event-type').value;
             const link = document.getElementById('event-link').value;
-            
             if(!title_zh || !date) return Swal.fire('欄位未填', '請填寫完整資訊', 'warning');
-            
             try {
                 await addDoc(collection(db, "events"), {
-                    title_zh, 
-                    title_en: title_en || title_zh, 
-                    date, 
-                    // [修改] 儲存時間為字串 (如果想用雙語，可以改存物件，但為了相容性這裡存中文，顯示時處理)
-                    // 更好的做法是存 time_zh, time_en
-                    time: time_zh, 
-                    time_zh: time_zh,
-                    time_en: time_en || time_zh,
-                    location_zh: loc_zh, 
-                    location_en: loc_en || loc_zh,
-                    type, 
-                    link: link || '', 
-                    timestamp: serverTimestamp()
+                    title_zh, title_en: title_en || title_zh, date, 
+                    time: time_zh, time_zh: time_zh, time_en: time_en || time_zh,
+                    location_zh: loc_zh, location_en: loc_en || loc_zh,
+                    type, link: link || '', timestamp: serverTimestamp()
                 });
                 Swal.fire('新增成功', '', 'success'); await loadDataFromFirebase();
-            } catch(e) { Swal.fire('錯誤', e.message, 'error');
-            }
+            } catch(e) { Swal.fire('錯誤', e.message, 'error'); }
         }
 
-        // [FIXED] addFinance Function to match new HTML IDs
         window.addFinance = async () => {
             const date = document.getElementById('fin-date').value;
-            // [修正] 改為讀取 fin-item-zh 和 fin-item-en
             const item_zh = document.getElementById('fin-item-zh').value;
             const item_en = document.getElementById('fin-item-en').value;
             let amount = parseInt(document.getElementById('fin-amount').value);
             const type = document.getElementById('fin-type').value;
-            
-            // [修正] 檢查欄位變數名稱
             if(!date || !item_zh || !amount) return Swal.fire('資料不全', '', 'warning');
-            
             if (type === 'Out') amount = -Math.abs(amount); else amount = Math.abs(amount);
-            
             try {
                 await addDoc(collection(db, "finance"), {
-                    date, 
-                    item_zh, 
-                    // [修正] 英文沒填則使用中文
-                    item_en: item_en || item_zh, 
-                    amount, 
-                    type, 
-                    timestamp: serverTimestamp()
+                    date, item_zh, item_en: item_en || item_zh, amount, type, timestamp: serverTimestamp()
                 });
                 Swal.fire('已新增財務', '', 'success'); await loadDataFromFirebase(); render(); 
-            } catch(e) { Swal.fire('錯誤', e.message, 'error');
-            }
+            } catch(e) { Swal.fire('錯誤', e.message, 'error'); }
         }
 
-        // [FIXED] addMeeting Function to match new HTML IDs
         window.addMeeting = async () => {
             const date = document.getElementById('mt-date').value;
-            // [修正] 改為讀取 mt-title-zh 和 mt-title-en
             const title_zh = document.getElementById('mt-title-zh').value;
             const title_en = document.getElementById('mt-title-en').value;
             const link = document.getElementById('mt-link').value; 
-            
             if(!date || !title_zh) return Swal.fire('資料不全', '', 'warning');
-            
             try {
                 await addDoc(collection(db, "meetings"), {
-                    date, 
-                    title_zh, 
-                    // [修正] 英文沒填則使用中文
-                    title_en: title_en || title_zh, 
-                    file: link || '#', 
-                    timestamp: serverTimestamp()
+                    date, title_zh, title_en: title_en || title_zh, file: link || '#', timestamp: serverTimestamp()
                 });
                 Swal.fire('已新增會議記錄', '', 'success'); await loadDataFromFirebase(); render();
-            } catch(e) { Swal.fire('錯誤', e.message, 'error');
-            }
+            } catch(e) { Swal.fire('錯誤', e.message, 'error'); }
         }
 
-        // [FIXED] addDownload Function to match new HTML IDs
         window.addDownload = async () => {
             const date = document.getElementById('dl-date').value;
-            // [修正] 改為讀取 dl-title-zh 和 dl-title-en
             const title_zh = document.getElementById('dl-title-zh').value;
             const title_en = document.getElementById('dl-title-en').value;
             const link = document.getElementById('dl-link').value;
             const type = document.getElementById('dl-type').value;
-            
             if(!date || !title_zh || !link) return Swal.fire('資料不全', '', 'warning');
-            
             try {
                 await addDoc(collection(db, "downloads"), {
-                    date, 
-                    title_zh, 
-                    // [修正] 英文沒填則使用中文
-                    title_en: title_en || title_zh, 
-                    file: link, 
-                    type, 
-                    timestamp: serverTimestamp()
+                    date, title_zh, title_en: title_en || title_zh, file: link, type, timestamp: serverTimestamp()
                 });
                 Swal.fire('已新增下載', '', 'success'); await loadDataFromFirebase(); render();
-            } catch(e) { Swal.fire('錯誤', e.message, 'error');
-            }
+            } catch(e) { Swal.fire('錯誤', e.message, 'error'); }
         }
 
         window.addPhoto = async () => {
             const url = document.getElementById('photo-url').value;
             const title_zh = document.getElementById('photo-title-zh').value;
             const title_en = document.getElementById('photo-title-en').value;
-            const album = document.getElementById('photo-album').value; // [NEW] Album Field
+            const album = document.getElementById('photo-album').value;
             if(!url) return Swal.fire('請輸入圖片網址', '', 'warning');
             try {
                 await addDoc(collection(db, "photos"), {
-                    url, 
-                    title_zh: title_zh || '活動照片', 
-                    title_en: title_en || 'Activity Photo', 
-                    album: album || '未分類', // Default album
-                    timestamp: serverTimestamp()
+                    url, title_zh: title_zh || '活動照片', title_en: title_en || 'Activity Photo', 
+                    album: album || '未分類', timestamp: serverTimestamp()
                 });
                 Swal.fire('新增成功', '', 'success'); await loadDataFromFirebase();
-            } catch(e) { Swal.fire('錯誤', e.message, 'error');
-            }
+            } catch(e) { Swal.fire('錯誤', e.message, 'error'); }
         }
 
         window.saveSystemSettings = async () => {
             const marqueeText = document.getElementById('system-marquee').value;
             const marqueeArray = marqueeText.split('|').map(s => s.trim()).filter(s => s);
-            const marqueeSize = document.getElementById('system-marquee-size').value; // [NEW] Size value
-
+            const marqueeSize = document.getElementById('system-marquee-size').value;
             try {
                 await setDoc(doc(db, "settings", "config"), { 
                     marquee: marqueeArray.length > 1 ? marqueeArray : marqueeText,
@@ -827,8 +753,7 @@ if (location.hostname !== "localhost") { // 建議只在正式站啟用
                 SYSTEM_SETTINGS.marqueeSize = marqueeSize;
                 updateMarquee();
                 Swal.fire('設定已儲存', '系統設定已更新', 'success');
-            } catch(e) { Swal.fire('儲存失敗', e.message, 'error');
-            }
+            } catch(e) { Swal.fire('儲存失敗', e.message, 'error'); }
         }
 
         window.deleteItem = async (collectionName, id) => {
@@ -838,24 +763,17 @@ if (location.hostname !== "localhost") { // 建議只在正式站啟用
                 try {
                     await deleteDoc(doc(db, collectionName, id));
                     Swal.fire('已刪除', '', 'success'); await loadDataFromFirebase(); render();
-                } catch(e) { Swal.fire('刪除失敗', '無法刪除靜態資料或權限不足', 'error');
-                }
+                } catch(e) { Swal.fire('刪除失敗', '無法刪除靜態資料或權限不足', 'error'); }
             }
         }
 
-        // --- Logic ---
         function updateMarquee() {
             const el = document.getElementById('marquee-text');
             if(!el) return;
-            // [NEW] Apply Font Size
             el.className = `marquee-content font-mono tracking-wider opacity-90 transition-all duration-300 ${SYSTEM_SETTINGS.marqueeSize || 'text-xs'}`;
-
             let content = '';
-            if (Array.isArray(SYSTEM_SETTINGS.marquee)) {
-                content = SYSTEM_SETTINGS.marquee.join(' &nbsp;&nbsp;&nbsp;&nbsp;✦&nbsp;&nbsp;&nbsp;&nbsp; ');
-            } else {
-                content = SYSTEM_SETTINGS.marquee;
-            }
+            if (Array.isArray(SYSTEM_SETTINGS.marquee)) { content = SYSTEM_SETTINGS.marquee.join(' &nbsp;&nbsp;&nbsp;&nbsp;✦&nbsp;&nbsp;&nbsp;&nbsp; '); } 
+            else { content = SYSTEM_SETTINGS.marquee; }
             el.innerHTML = content;
         }
 
@@ -876,10 +794,7 @@ if (location.hostname !== "localhost") { // 建議只在正式站啟用
         window.performSearch = () => {
             const queryText = document.getElementById('search-input').value.toLowerCase();
             const resultsDiv = document.getElementById('search-results');
-            if (queryText.length < 2) {
-                resultsDiv.innerHTML = '';
-                return;
-            }
+            if (queryText.length < 2) { resultsDiv.innerHTML = ''; return; }
             const hits = [];
             APP_DATA.announcements.forEach(a => {
                 const title = val(a, 'title');
@@ -907,39 +822,29 @@ if (location.hostname !== "localhost") { // 建議只在正式站啟用
                 lucide.createIcons();
             }
         };
-
-        // --- Lightbox with Navigation ---
-        // [FIXED] Updated openLightbox to fetch list dynamically based on view state
+        
         window.openLightbox = (index) => {
-            // Determine the list based on current view
             if (APP_STATE.galleryView === 'photos' && APP_STATE.activeAlbum) {
                 APP_STATE.lightboxList = APP_DATA.photos.filter(p => (p.album || '未分類') === APP_STATE.activeAlbum);
             } else {
-                // Fallback or other views (e.g. latest photos on home)
                 APP_STATE.lightboxList = APP_DATA.photos;
             }
-            
             APP_STATE.lightboxIndex = index;
-            
             updateLightboxContent();
-            
             const modal = document.getElementById('lightbox-modal');
             modal.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
-            modal.focus(); // Focus for keyboard events
+            modal.focus();
         };
-
         function updateLightboxContent() {
             const p = APP_STATE.lightboxList[APP_STATE.lightboxIndex];
             if(!p) return;
             const img = document.getElementById('lightbox-img');
             const text = document.getElementById('lightbox-caption');
             const counter = document.getElementById('lightbox-counter');
-            
             img.src = p.url;
             text.innerText = val(p, 'title');
             counter.innerText = `${APP_STATE.lightboxIndex + 1} / ${APP_STATE.lightboxList.length}`;
         }
-
         window.changeLightbox = (direction) => {
             event.stopPropagation();
             let newIndex = APP_STATE.lightboxIndex + direction;
@@ -948,14 +853,11 @@ if (location.hostname !== "localhost") { // 建議只在正式站啟用
             APP_STATE.lightboxIndex = newIndex;
             updateLightboxContent();
         }
-
         window.closeLightbox = () => {
             const modal = document.getElementById('lightbox-modal');
             modal.classList.add('opacity-0', 'pointer-events-none');
             setTimeout(() => modal.classList.add('hidden'), 300);
         };
-
-        // [NEW] Download Photo
         window.downloadPhoto = async () => {
             const p = APP_STATE.lightboxList[APP_STATE.lightboxIndex];
             if(!p) return;
@@ -971,39 +873,21 @@ if (location.hostname !== "localhost") { // 建議只在正式站啟用
                 window.URL.revokeObjectURL(url);
                 document.body.removeChild(a);
             } catch (e) {
-                // Fallback for cross-origin issues
                 window.open(p.url, '_blank');
             }
         }
-
-        // [NEW] Share Photo
         window.sharePhoto = async () => {
             const p = APP_STATE.lightboxList[APP_STATE.lightboxIndex];
             if(!p) return;
             if (navigator.share) {
                 try {
-                    await navigator.share({
-                        title: val(p, 'title'),
-                        text: `看看這張來自北港高中學生會的照片：${val(p, 'title')}`,
-                        url: p.url
-                    });
-                } catch (err) {
-                    console.error("Share failed:", err);
-                }
+                    await navigator.share({ title: val(p, 'title'), text: `看看這張來自北港高中學生會的照片：${val(p, 'title')}`, url: p.url });
+                } catch (err) { console.error("Share failed:", err); }
             } else {
-                // Fallback: Copy URL
                 navigator.clipboard.writeText(p.url);
-                Swal.fire({
-                    icon: 'success',
-                    title: '連結已複製',
-                    text: '照片連結已複製到剪貼簿',
-                    timer: 1500,
-                    showConfirmButton: false
-                });
+                Swal.fire({ icon: 'success', title: '連結已複製', text: '照片連結已複製到剪貼簿', timer: 1500, showConfirmButton: false });
             }
         }
-
-        // Lightbox Keyboard Support
         document.addEventListener('keydown', (e) => {
             if (document.getElementById('lightbox-modal').classList.contains('hidden')) return;
             if (e.key === 'Escape') closeLightbox();
@@ -1024,9 +908,7 @@ if (location.hostname !== "localhost") { // 建議只在正式站啟用
                     ${item.content_zh ? `<div class="text-gray-600 dark:text-gray-300 overflow-x-auto news-content leading-relaxed relative z-10">${formatContent(val(item, 'content'))}</div>` : ''}
                 </div>
             `).join('');
-            // 右側功能：活動倒數 + 最新照片預覽
-            let rightSideHtml = '';
-            // 1. 活動倒數
+            
             let nextEventHtml = `<div class="p-8 text-center text-gray-400 dark:text-gray-500 font-medium">暫無即將到來的活動</div>`;
             const futureEvents = APP_DATA.events.filter(e => new Date(e.date) >= new Date());
             if (futureEvents.length > 0) {
@@ -1045,7 +927,6 @@ if (location.hostname !== "localhost") { // 建議只在正式站啟用
                 `;
             }
 
-            // 2. 最新照片預覽
             let latestPhotoHtml = '';
             if(APP_DATA.photos && APP_DATA.photos.length > 0) {
                 const p = APP_DATA.photos[0];
@@ -1111,18 +992,13 @@ if (location.hostname !== "localhost") { // 建議只在正式站啟用
             `;
         }
         
-        // [FIXED] Dedicated function for Back Button
         window.backToAlbums = () => {
             APP_STATE.galleryView = 'albums';
             render();
         }
 
-        // [MODIFIED] Render Gallery to support Albums
         function renderGallery() {
-            // Group photos by Album
             const photos = APP_DATA.photos;
-            
-            // View 1: Albums List
             if (APP_STATE.galleryView === 'albums') {
                 const albumsMap = {};
                 photos.forEach(p => {
@@ -1130,7 +1006,6 @@ if (location.hostname !== "localhost") { // 建議只在正式站啟用
                     if (!albumsMap[albumName]) albumsMap[albumName] = [];
                     albumsMap[albumName].push(p);
                 });
-
                 const albumsHtml = Object.keys(albumsMap).map(name => {
                     const coverPhoto = albumsMap[name][0];
                     const count = albumsMap[name].length;
@@ -1149,7 +1024,6 @@ if (location.hostname !== "localhost") { // 建議只在正式站啟用
                 }).join('');
 
                 if (photos.length === 0) return `<div class="text-center py-20 text-gray-400">目前沒有照片</div>`;
-
                 return `
                     <div class="text-center mb-10 animate-fade-in">
                         <h1 class="text-4xl font-black mb-2 text-theme-600 dark:text-theme-400 tracking-tight">${t('galleryTitle')}</h1>
@@ -1160,13 +1034,9 @@ if (location.hostname !== "localhost") { // 建議只在正式站啟用
                     </div>
                 `;
             } 
-            // View 2: Photos inside Album (Masonry Layout)
             else {
                 const currentAlbumName = APP_STATE.activeAlbum;
                 const albumPhotos = photos.filter(p => (p.album || '未分類') === currentAlbumName);
-                
-                // [FIXED] onClick now just passes index, openLightbox handles the rest
-                // [IMPROVED] Use CSS columns for masonry layout effect
                 const photoHtml = albumPhotos.map((p, idx) => `
                     <div class="break-inside-avoid mb-6 cursor-zoom-in group relative overflow-hidden rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700" onclick="openLightbox(${idx})">
                         <img src="${p.url}" alt="${val(p, 'title')}" class="w-full h-auto object-cover transform group-hover:scale-105 transition duration-700 ease-out" loading="lazy">
@@ -1175,7 +1045,6 @@ if (location.hostname !== "localhost") { // 建議只在正式站啟用
                         </div>
                     </div>
                 `).join('');
-
                 return `
                     <div class="mb-8 flex items-center animate-fade-in">
                         <button onclick="backToAlbums()" class="flex items-center gap-2 text-gray-500 hover:text-theme-600 transition-colors font-bold bg-white dark:bg-gray-800 px-4 py-2 rounded-full shadow-sm">
@@ -1200,9 +1069,7 @@ if (location.hostname !== "localhost") { // 建議只在正式站啟用
 
         function renderEvents() {
             const filter = APP_STATE.eventFilter;
-            const filteredEvents = filter === 'All' 
-                ? APP_DATA.events 
-                : APP_DATA.events.filter(e => e.type === filter);
+            const filteredEvents = filter === 'All' ? APP_DATA.events : APP_DATA.events.filter(e => e.type === filter);
             const eventsHtml = filteredEvents.length > 0 ? filteredEvents.map(ev => {
                 const { month, day } = formatDateHelper(ev.date);
                 
@@ -1406,7 +1273,6 @@ if (location.hostname !== "localhost") { // 建議只在正式站啟用
             return `
                 <div class="max-w-3xl mx-auto bg-white dark:bg-gray-800 p-10 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 relative overflow-hidden">
                     <div class="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-theme-100 dark:bg-theme-900/30 rounded-full blur-2xl"></div>
-                    
                     <h1 class="text-3xl font-black mb-8 text-center text-theme-600 dark:text-theme-400 tracking-tight relative z-10">${t('contact')}</h1>
                     <div class="space-y-4 relative z-10">
                         <a href="https://www.instagram.com/pksh.su/" target="_blank" class="flex items-center p-5 bg-gradient-to-r from-gray-50 to-white dark:from-gray-700 dark:to-gray-800 border border-gray-100 dark:border-gray-600 rounded-2xl hover:border-pink-300 transition-all group shadow-sm hover:shadow-md">
@@ -1419,7 +1285,6 @@ if (location.hostname !== "localhost") { // 建議只在正式站啟用
                             </div>
                             <i data-lucide="arrow-right" class="ml-auto w-5 h-5 text-gray-300 group-hover:text-pink-500 group-hover:translate-x-1 transition-all"></i>
                         </a>
-                        
                         <a href="mailto:pkshsu@pksh.ylc.edu.tw" class="flex items-center p-5 bg-gradient-to-r from-gray-50 to-white dark:from-gray-700 dark:to-gray-800 border border-gray-100 dark:border-gray-600 rounded-2xl hover:border-theme-300 transition-all group shadow-sm hover:shadow-md">
                             <div class="bg-white p-3 rounded-xl shadow-sm group-hover:scale-110 transition-transform mr-5">
                                 <i data-lucide="mail" class="w-8 h-8 text-theme-500"></i>
@@ -1453,9 +1318,7 @@ if (location.hostname !== "localhost") { // 建議只在正式站啟用
                             <p class="text-xs text-gray-400 font-mono mt-1">${m.date}</p>
                         </div>
                     </div>
-                    <a href="${m.file}" target="_blank" class="text-theme-600 hover:bg-theme-500 hover:text-white px-4 py-2 rounded-lg text-sm font-bold transition-all border border-theme-200">
-                        Open PDF
-                    </a>
+                    <a href="${m.file}" target="_blank" class="text-theme-600 hover:bg-theme-500 hover:text-white px-4 py-2 rounded-lg text-sm font-bold transition-all border border-theme-200">Open PDF</a>
                 </div>
             `).join('') : `<div class="text-center py-20 bg-gray-50 dark:bg-gray-800/50 rounded-3xl"><p class="text-gray-400 font-medium">暫無公開的會議記錄。</p></div>`;
             return `
@@ -1465,329 +1328,305 @@ if (location.hostname !== "localhost") { // 建議只在正式站啟用
                 </div>`;
         }
 
-        // --- Admin System ---
+        // --- Admin System (安全修正 5: 強制登入檢查) ---
         function renderAdmin() {
-    // 嚴格檢查：如果沒有使用者登入，直接回傳登入表單的 HTML
-    if (!APP_STATE.user) {
-        return `
-            <div class="max-w-sm mx-auto bg-white dark:bg-gray-800 p-10 rounded-3xl shadow-2xl mt-20">
-                <h1 class="text-3xl font-black mb-8 dark:text-white text-center">學生會幹部登入</h1>
-                <form onsubmit="handleLogin(event)" class="space-y-6">
-                    <div>
-                        <label class="block text-xs font-bold mb-2 text-gray-500">電子郵件</label>
-                        <input type="email" id="admin-email" required class="w-full p-3 bg-gray-50 border rounded-xl" placeholder="admin@pksh.su">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold mb-2 text-gray-500">密碼</label>
-                        <input type="password" id="admin-pwd" required class="w-full p-3 bg-gray-50 border rounded-xl" placeholder="••••••••">
-                    </div>
-                    <button type="submit" class="w-full bg-theme-600 text-white py-4 rounded-xl font-bold hover:bg-theme-700 transition">登入系統</button>
-                </form>
-            </div>
-        `;
-    }
-
-    // --- 以下是原本登入後才能看到的內容 (只有通過上面的檢查才會執行到這) ---
-    const tab = APP_STATE.adminTab;
-    let contentHtml = '';
-    
-    // ... (保留你原本 之後的那些 switchTab 邏輯，或是直接用你原本的程式碼接在下面) ...
-    // 因篇幅關係，請確保這裡接回你原本第 380 行 else 裡面的所有內容
-    
-    // *重要*：因為我們改變了寫法，原本第 380 行的 `else {` 和第 480 行對應的 `}` 要拿掉，讓程式碼變平整。
-    
-    // 為避免貼錯，我建議你直接修改原本第 374 行：
-    // 把 `if (!APP_STATE.user) { ... } else { ... }` 
-    // 改成 `if (!APP_STATE.user) { return ...; }` (拿掉 else，直接往下寫)
-    
-    // ... 以下貼上你原本第 381 行到 479 行的程式碼 ...
-    const inputStyle = "w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white focus:ring-2 focus:ring-theme-500 focus:outline-none transition-shadow";
-    // ... (你原本的後台邏輯不用動) ...
-    
-    return `
-        <div class="bg-white dark:bg-gray-900 rounded-[2rem] ...">
-           ... (你原本的後台外框 HTML) ...
-        </div>
-    `;
-}
-            } else {
-                const tab = APP_STATE.adminTab;
-                let contentHtml = '';
-
-                const inputStyle = "w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white focus:ring-2 focus:ring-theme-500 focus:outline-none transition-shadow";
-                const labelStyle = "block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1";
-                const btnStyle = "bg-theme-500 hover:bg-theme-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all active:scale-95 w-full md:w-auto";
-                
-                if (tab === 'news') {
-                    const list = APP_DATA.announcements.filter(a => a.id && !a.id.startsWith('static_')).map(a => `
-                         <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-900 p-4 rounded-xl border border-gray-100 dark:border-gray-700 group hover:border-theme-200 transition mb-3">
-                            <div><p class="font-bold dark:text-white">${a.title_zh}</p><span class="text-xs text-gray-400 font-mono">${a.date}</span></div>
-                            <button onclick="deleteItem('announcements', '${a.id}')" class="text-gray-400 hover:text-red-500 p-2 hover:bg-red-50 rounded-lg transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                         </div>
-                    `).join('');
-                    contentHtml = `
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
-                            <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
-                                <h3 class="font-bold mb-6 text-xl dark:text-white flex items-center gap-2"><i data-lucide="plus-circle" class="text-theme-500"></i> 新增公告</h3>
-                                <div class="space-y-4">
-                                    <div><label class="${labelStyle}">日期</label><input id="news-date" type="date" class="${inputStyle}"></div>
-                                    <div><label class="${labelStyle}">中文標題</label><input id="news-title-zh" class="${inputStyle}" placeholder="輸入標題..."></div>
-                                    <div class="flex gap-2 items-end">
-                                        <div class="flex-grow"><label class="${labelStyle}">English Title</label><input id="news-title-en" class="${inputStyle}" placeholder="Auto translate..."></div>
-                                        <button onclick="autoTranslate('news-title-zh', 'news-title-en')" class="h-[50px] px-4 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition"><i data-lucide="languages"></i></button>
-                                    </div>
-                                    <div><label class="${labelStyle}">中文內容</label><textarea id="news-content-zh" class="${inputStyle} h-24" placeholder="支援 HTML..."></textarea></div>
-                                    <div class="flex gap-2 items-start">
-                                        <div class="flex-grow"><label class="${labelStyle}">English Content</label><textarea id="news-content-en" class="${inputStyle} h-24"></textarea></div>
-                                        <button onclick="autoTranslate('news-content-zh', 'news-content-en')" class="mt-8 h-[50px] px-4 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition"><i data-lucide="languages"></i></button>
-                                    </div>
-                                    <button onclick="addNews()" class="${btnStyle} mt-2 w-full"><i data-lucide="save" class="inline w-4 h-4 mr-2"></i> 發布公告</button>
-                                </div>
-                            </div>
-                            <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col h-[600px]">
-                                <h3 class="font-bold mb-4 text-xl dark:text-white">已發布列表</h3>
-                                <div class="overflow-y-auto flex-grow pr-2 space-y-1 custom-scrollbar">${list || `<div class="h-full flex items-center justify-center text-gray-400">暫無資料</div>`}</div>
-                            </div>
-                        </div>
-                    `;
-                }
-                else if (tab === 'events') {
-                     const list = APP_DATA.events.filter(e => e.id && !e.id.startsWith('e')).map(e => `
-                         <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-900 p-4 rounded-xl border border-gray-100 dark:border-gray-700 group hover:border-theme-200 transition mb-3">
-                            <div><p class="font-bold dark:text-white">${e.title_zh}</p><span class="text-xs text-gray-400">${e.date} | ${e.type}</span></div>
-                            <button onclick="deleteItem('events', '${e.id}')" class="text-gray-400 hover:text-red-500 p-2 hover:bg-red-50 rounded-lg transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                         </div>
-                    `).join('');
-                    contentHtml = `
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
-                             <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
-                                <h3 class="font-bold mb-6 text-xl dark:text-white flex items-center gap-2"><i data-lucide="calendar-plus" class="text-theme-500"></i> 新增活動</h3>
-                                <div class="space-y-4">
-                                    <div><label class="${labelStyle}">中文名稱</label><input id="event-title-zh" class="${inputStyle}"></div>
-                                    <div class="flex gap-2 items-end"><div class="flex-grow"><label class="${labelStyle}">English Title</label><input id="event-title-en" class="${inputStyle}"></div><button onclick="autoTranslate('event-title-zh', 'event-title-en')" class="h-[50px] px-4 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition"><i data-lucide="languages"></i></button></div>
-                                    <div class="flex gap-4">
-                                        <div class="w-1/2"><label class="${labelStyle}">日期</label><input id="event-date" type="date" class="${inputStyle}"></div>
-                                        <div class="w-1/2"><label class="${labelStyle}">時間</label><input id="event-time" class="${inputStyle}" placeholder="ex: 08:00"></div>
-                                    </div>
-                                    <div><label class="${labelStyle}">中文地點</label><input id="event-loc-zh" class="${inputStyle}"></div>
-                                    <div class="flex gap-2 items-end">
-                                         <div class="flex-grow"><label class="${labelStyle}">English Location</label><input id="event-loc-en" class="${inputStyle}"></div>
-                                         <button onclick="autoTranslate('event-loc-zh', 'event-loc-en')" class="h-[50px] px-4 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition"><i data-lucide="languages"></i></button>
-                                    </div>
-
-                                    <div><label class="${labelStyle}">中文時間/備註</label><input id="event-time-zh" class="${inputStyle}" placeholder="08:00 或 依公告時間"></div>
-                                    <div class="flex gap-2 items-end">
-                                         <div class="flex-grow"><label class="${labelStyle}">English Time/Note</label><input id="event-time-en" class="${inputStyle}"></div>
-                                         <button onclick="autoTranslate('event-time-zh', 'event-time-en')" class="h-[50px] px-4 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition"><i data-lucide="languages"></i></button>
-                                    </div>
-
-                                    <div><label class="${labelStyle}">連結 (選填)</label><input id="event-link" class="${inputStyle}" placeholder="https://..."></div>
-                                    <div><label class="${labelStyle}">類型</label><select id="event-type" class="${inputStyle}"><option value="Activity">Activity (活動)</option><option value="Academic">Academic (教務)</option><option value="Holiday">Holiday (假日)</option></select></div>
-                                    <button onclick="addEvent()" class="${btnStyle} mt-2 w-full">發布活動</button>
-                                </div>
-                            </div>
-                            <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col h-[600px]">
-                                <h3 class="font-bold mb-4 text-xl dark:text-white">活動列表</h3>
-                                <div class="overflow-y-auto flex-grow pr-2 custom-scrollbar">${list || `<div class="h-full flex items-center justify-center text-gray-400">暫無資料</div>`}</div>
-                            </div>
-                        </div>
-                    `;
-                }
-                else if (tab === 'photos') {
-                    const list = APP_DATA.photos ? APP_DATA.photos.map(p => `
-                        <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-900 p-3 rounded-xl border border-gray-100 dark:border-gray-700 mb-3">
-                            <div class="flex items-center gap-4">
-                                <img src="${p.url}" class="w-12 h-12 object-cover rounded-lg">
-                                <div>
-                                    <p class="font-bold dark:text-white text-sm truncate w-32">${p.title_zh}</p>
-                                    <p class="text-[10px] text-gray-400 bg-gray-100 dark:bg-gray-800 px-1 rounded inline-block">${p.album || '未分類'}</p>
-                                </div>
-                            </div>
-                            <button onclick="deleteItem('photos', '${p.id}')" class="text-gray-400 hover:text-red-500 p-2 hover:bg-red-50 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                        </div>
-                    `).join('') : '';
-                    contentHtml = `
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
-                            <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
-                                <h3 class="font-bold mb-6 text-xl dark:text-white flex items-center gap-2"><i data-lucide="image-plus" class="text-theme-500"></i> 新增照片</h3>
-                                <div class="space-y-4">
-                                    <div><label class="${labelStyle}">圖片網址 (URL)</label><input id="photo-url" class="${inputStyle}" placeholder="https://..."></div>
-                                    <div><label class="${labelStyle}">中文標題</label><input id="photo-title-zh" class="${inputStyle}"></div>
-                                    <div class="flex gap-2 items-end">
-                                        <div class="flex-grow"><label class="${labelStyle}">English Title</label><input id="photo-title-en" class="${inputStyle}"></div>
-                                        <button onclick="autoTranslate('photo-title-zh', 'photo-title-en')" class="h-[50px] px-4 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition"><i data-lucide="languages"></i></button>
-                                    </div>
-                                    <div><label class="${labelStyle}">相簿名稱 (Album)</label><input id="photo-album" class="${inputStyle}" placeholder="ex: 校慶運動會"></div>
-                                    <button onclick="addPhoto()" class="${btnStyle} mt-2 w-full">新增照片</button>
-                                </div>
-                            </div>
-                            <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col h-[600px]">
-                                <h3 class="font-bold mb-4 text-xl dark:text-white">照片列表</h3>
-                                <div class="overflow-y-auto flex-grow pr-2 custom-scrollbar">${list || `<div class="h-full flex items-center justify-center text-gray-400">暫無資料</div>`}</div>
-                            </div>
-                        </div>
-                    `;
-                }
-                else if (tab === 'finance') {
-                    const list = APP_DATA.finance.map(f => `
-                        <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-900 p-4 rounded-xl border border-gray-100 dark:border-gray-700 mb-3">
-                            <div><p class="font-bold dark:text-white">${f.item_zh}</p><span class="text-xs text-gray-400">${f.date} | $${f.amount}</span></div>
-                            <button onclick="deleteItem('finance', '${f.id}')" class="text-gray-400 hover:text-red-500 p-2 hover:bg-red-50 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                        </div>
-                    `).join('');
-                    contentHtml = `
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
-                            <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
-                                <h3 class="font-bold mb-6 text-xl dark:text-white flex items-center gap-2"><i data-lucide="dollar-sign" class="text-theme-500"></i> 新增收支</h3>
-                                <div class="space-y-4">
-                                    <div><label class="${labelStyle}">日期</label><input id="fin-date" type="date" class="${inputStyle}"></div>
-                                    <div><label class="${labelStyle}">中文項目名稱</label><input id="fin-item-zh" class="${inputStyle}"></div>
-                                    <div class="flex gap-2 items-end">
-                                        <div class="flex-grow"><label class="${labelStyle}">English Item</label><input id="fin-item-en" class="${inputStyle}"></div>
-                                        <button onclick="autoTranslate('fin-item-zh', 'fin-item-en')" class="h-[50px] px-4 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition"><i data-lucide="languages"></i></button>
-                                    </div>
-                                    <div class="flex gap-4">
-                                        <div class="w-2/3"><label class="${labelStyle}">金額</label><input id="fin-amount" type="number" class="${inputStyle}" placeholder="1000"></div>
-                                        <div class="w-1/3"><label class="${labelStyle}">類型</label><select id="fin-type" class="${inputStyle}"><option value="In">收入 (+)</option><option value="Out">支出 (-)</option></select></div>
-                                    </div>
-                                    <button onclick="addFinance()" class="${btnStyle} mt-2 w-full">新增紀錄</button>
-                                </div>
-                            </div>
-                            <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col h-[600px]">
-                                <h3 class="font-bold mb-4 text-xl dark:text-white">財務列表</h3>
-                                <div class="overflow-y-auto flex-grow pr-2 custom-scrollbar">${list}</div>
-                            </div>
-                        </div>
-                    `;
-                }
-                else if (tab === 'meetings') {
-                     const list = APP_DATA.meetings.map(m => `
-                        <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-900 p-4 rounded-xl border border-gray-100 dark:border-gray-700 mb-3">
-                            <div><p class="font-bold dark:text-white">${m.title_zh}</p><span class="text-xs text-gray-400">${m.date}</span></div>
-                            <button onclick="deleteItem('meetings', '${m.id}')" class="text-gray-400 hover:text-red-500 p-2 hover:bg-red-50 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                        </div>
-                    `).join('');
-                    contentHtml = `
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
-                            <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
-                                <h3 class="font-bold mb-6 text-xl dark:text-white flex items-center gap-2"><i data-lucide="file-plus" class="text-theme-500"></i> 上傳會議記錄</h3>
-                                <div class="space-y-4">
-                                    <div><label class="${labelStyle}">日期</label><input id="mt-date" type="date" class="${inputStyle}"></div>
-                                    <div><label class="${labelStyle}">中文標題</label><input id="mt-title-zh" class="${inputStyle}"></div>
-                                    <div class="flex gap-2 items-end">
-                                        <div class="flex-grow"><label class="${labelStyle}">English Title</label><input id="mt-title-en" class="${inputStyle}"></div>
-                                        <button onclick="autoTranslate('mt-title-zh', 'mt-title-en')" class="h-[50px] px-4 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition"><i data-lucide="languages"></i></button>
-                                    </div>
-                                    <div><label class="${labelStyle}">檔案連結 (Google Drive)</label><input id="mt-link" class="${inputStyle}" placeholder="https://..."></div>
-                                    <button onclick="addMeeting()" class="${btnStyle} mt-2 w-full">發布紀錄</button>
-                                </div>
-                            </div>
-                            <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col h-[600px]">
-                                <h3 class="font-bold mb-4 text-xl dark:text-white">記錄列表</h3>
-                                <div class="overflow-y-auto flex-grow pr-2 custom-scrollbar">${list}</div>
-                            </div>
-                        </div>
-                    `;
-                }
-                else if (tab === 'downloads') {
-                     const list = APP_DATA.downloads.map(d => `
-                        <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-900 p-4 rounded-xl border border-gray-100 dark:border-gray-700 mb-3">
-                            <div><p class="font-bold dark:text-white">${d.title_zh}</p><span class="text-xs text-gray-400">${d.type}</span></div>
-                            <button onclick="deleteItem('downloads', '${d.id}')" class="text-gray-400 hover:text-red-500 p-2 hover:bg-red-50 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                        </div>
-                    `).join('');
-                    contentHtml = `
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
-                            <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
-                                <h3 class="font-bold mb-6 text-xl dark:text-white flex items-center gap-2"><i data-lucide="folder-plus" class="text-theme-500"></i> 新增下載資源</h3>
-                                <div class="space-y-4">
-                                    <div><label class="${labelStyle}">日期</label><input id="dl-date" type="date" class="${inputStyle}"></div>
-                                    <div><label class="${labelStyle}">中文標題</label><input id="dl-title-zh" class="${inputStyle}"></div>
-                                    <div class="flex gap-2 items-end">
-                                        <div class="flex-grow"><label class="${labelStyle}">English Title</label><input id="dl-title-en" class="${inputStyle}"></div>
-                                        <button onclick="autoTranslate('dl-title-zh', 'dl-title-en')" class="h-[50px] px-4 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition"><i data-lucide="languages"></i></button>
-                                    </div>
-                                    <div><label class="${labelStyle}">檔案連結</label><input id="dl-link" class="${inputStyle}" placeholder="https://..."></div>
-                                    <div><label class="${labelStyle}">類型</label><select id="dl-type" class="${inputStyle}"><option value="Event">Event (活動)</option><option value="Academic">Academic (教務)</option><option value="Other">Other (其他)</option></select></div>
-                                    <button onclick="addDownload()" class="${btnStyle} mt-2 w-full">發布資源</button>
-                                </div>
-                            </div>
-                            <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col h-[600px]">
-                                <h3 class="font-bold mb-4 text-xl dark:text-white">資源列表</h3>
-                                <div class="overflow-y-auto flex-grow pr-2 custom-scrollbar">${list}</div>
-                            </div>
-                        </div>
-                    `;
-                }
-                else if (tab === 'system') {
-                    let marqueeVal = '';
-                    if(Array.isArray(SYSTEM_SETTINGS.marquee)) marqueeVal = SYSTEM_SETTINGS.marquee.join(' | ');
-                    else marqueeVal = SYSTEM_SETTINGS.marquee;
-                    
-                    const currentSize = SYSTEM_SETTINGS.marqueeSize || 'text-xs';
-
-                    contentHtml = `
-                        <div class="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 max-w-2xl mx-auto">
-                            <h3 class="font-bold mb-6 dark:text-white text-xl flex items-center gap-2"><i data-lucide="settings" class="text-theme-500"></i> 系統全域設定</h3>
-                            
-                            <div class="mb-8">
-                                <label class="${labelStyle}">首頁跑馬燈內容</label>
-                                <textarea id="system-marquee" rows="4" class="${inputStyle}" placeholder="輸入文字... 若要分段顯示，請使用 | 符號分隔">${marqueeVal}</textarea>
-                                <p class="text-xs text-gray-400 mt-2 ml-1"><i data-lucide="info" class="inline w-3 h-3"></i> 提示：使用 " | " 符號來分隔多段跑馬燈訊息。</p>
-                            </div>
-                            
-                            <div class="mb-8">
-                                <label class="${labelStyle}">跑馬燈字體大小</label>
-                                <div class="flex items-center gap-4">
-                                    <select id="system-marquee-size" class="${inputStyle}">
-                                        <option value="text-xs" ${currentSize === 'text-xs' ? 'selected' : ''}>最小 (Default)</option>
-                                        <option value="text-sm" ${currentSize === 'text-sm' ? 'selected' : ''}>小</option>
-                                        <option value="text-base" ${currentSize === 'text-base' ? 'selected' : ''}>中</option>
-                                        <option value="text-lg" ${currentSize === 'text-lg' ? 'selected' : ''}>大</option>
-                                        <option value="text-xl" ${currentSize === 'text-xl' ? 'selected' : ''}>特大</option>
-                                        <option value="text-2xl" ${currentSize === 'text-2xl' ? 'selected' : ''}>超大</option>
-                                    </select>
-                                    <span class="text-gray-500 text-sm">預覽: A+</span>
-                                </div>
-                            </div>
-
-                            <button onclick="saveSystemSettings()" class="${btnStyle} w-full"><i data-lucide="save" class="inline w-4 h-4 mr-1"></i> 儲存設定</button>
-                        </div>
-                    `;
-                }
-
-                const navBtn = (key, icon, label) => `
-                    <button onclick="switchAdminTab('${key}')" class="text-left px-4 py-3 rounded-xl transition-all flex items-center gap-3 font-bold ${tab===key ? 'bg-theme-500 text-white shadow-md' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'}">
-                        <i data-lucide="${icon}" class="w-5 h-5"></i> ${label}
-                    </button>
-                `;
+            if (!APP_STATE.user) {
+                // 如果沒登入，只回傳登入表單，不渲染後台介面
                 return `
-                    <div class="bg-white dark:bg-gray-900 rounded-[2rem] shadow-2xl flex flex-col md:flex-row overflow-hidden border border-gray-100 dark:border-gray-800 min-h-[80vh]">
-                        <div class="w-full md:w-64 bg-gray-50 dark:bg-gray-950 p-6 flex flex-col gap-1 border-r border-gray-100 dark:border-gray-800">
-                            <div class="mb-8 px-2">
-                                <h2 class="text-2xl font-black text-theme-600 dark:text-theme-400 tracking-tight">${t('admin_dashboard')}</h2>
-                                <p class="text-xs text-gray-400 mt-1 truncate font-mono">${APP_STATE.user.email}</p>
+                    <div class="max-w-sm mx-auto bg-white dark:bg-gray-800 p-10 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-700 mt-20 relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-theme-400 to-blue-500"></div>
+                        <h1 class="text-3xl font-black mb-8 dark:text-white text-center tracking-tight">${t('login_title')}</h1>
+                        <form onsubmit="handleLogin(event)" class="space-y-6">
+                            <div>
+                                <label class="block text-xs font-bold mb-2 dark:text-gray-300 uppercase tracking-widest text-gray-500">${t('login_email')}</label>
+                                <input type="email" id="admin-email" required class="w-full p-3.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl dark:text-white focus:outline-none focus:ring-2 focus:ring-theme-500 focus:border-transparent transition-all shadow-inner" placeholder="admin@pksh.su">
                             </div>
-                            ${navBtn('news', 'bell', t('admin_news'))}
-                            ${navBtn('events', 'calendar', t('admin_events'))}
-                            ${navBtn('photos', 'image', t('admin_photos'))}
-                            ${navBtn('finance', 'dollar-sign', t('admin_finance'))}
-                            ${navBtn('meetings', 'file-text', t('admin_meetings'))}
-                            ${navBtn('downloads', 'download', t('admin_downloads'))}
-                            ${navBtn('system', 'settings', t('admin_system'))}
-                            
-                            <div class="mt-auto pt-6 border-t border-gray-200 dark:border-gray-800">
-                                <button onclick="handleLogout()" class="w-full text-left px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 font-bold transition flex items-center gap-3">
-                                    <i data-lucide="log-out" class="w-5 h-5"></i> ${t('admin_logout')}
-                                </button>
+                            <div>
+                                <label class="block text-xs font-bold mb-2 dark:text-gray-300 uppercase tracking-widest text-gray-500">${t('login_pwd')}</label>
+                                <input type="password" id="admin-pwd" required class="w-full p-3.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl dark:text-white focus:outline-none focus:ring-2 focus:ring-theme-500 focus:border-transparent transition-all shadow-inner" placeholder="••••••••">
+                            </div>
+                            <button type="submit" class="w-full bg-gradient-to-r from-theme-500 to-theme-700 text-white py-4 rounded-xl hover:shadow-lg hover:scale-[1.02] active:scale-95 transition-all font-bold text-lg shadow-theme-500/30">${t('login_btn')}</button>
+                        </form>
+                    </div>
+                `;
+            }
+
+            // --- 只有登入後才會執行到這裡 ---
+            const tab = APP_STATE.adminTab;
+            let contentHtml = '';
+
+            const inputStyle = "w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white focus:ring-2 focus:ring-theme-500 focus:outline-none transition-shadow";
+            const labelStyle = "block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1";
+            const btnStyle = "bg-theme-500 hover:bg-theme-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all active:scale-95 w-full md:w-auto";
+
+            if (tab === 'news') {
+                const list = APP_DATA.announcements.filter(a => a.id && !a.id.startsWith('static_')).map(a => `
+                     <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-900 p-4 rounded-xl border border-gray-100 dark:border-gray-700 group hover:border-theme-200 transition mb-3">
+                        <div><p class="font-bold dark:text-white">${a.title_zh}</p><span class="text-xs text-gray-400 font-mono">${a.date}</span></div>
+                        <button onclick="deleteItem('announcements', '${a.id}')" class="text-gray-400 hover:text-red-500 p-2 hover:bg-red-50 rounded-lg transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                     </div>
+                `).join('');
+                contentHtml = `
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
+                            <h3 class="font-bold mb-6 text-xl dark:text-white flex items-center gap-2"><i data-lucide="plus-circle" class="text-theme-500"></i> 新增公告</h3>
+                            <div class="space-y-4">
+                                <div><label class="${labelStyle}">日期</label><input id="news-date" type="date" class="${inputStyle}"></div>
+                                <div><label class="${labelStyle}">中文標題</label><input id="news-title-zh" class="${inputStyle}" placeholder="輸入標題..."></div>
+                                <div class="flex gap-2 items-end">
+                                    <div class="flex-grow"><label class="${labelStyle}">English Title</label><input id="news-title-en" class="${inputStyle}" placeholder="Auto translate..."></div>
+                                    <button onclick="autoTranslate('news-title-zh', 'news-title-en')" class="h-[50px] px-4 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition"><i data-lucide="languages"></i></button>
+                                </div>
+                                <div><label class="${labelStyle}">中文內容</label><textarea id="news-content-zh" class="${inputStyle} h-24" placeholder="支援 HTML..."></textarea></div>
+                                <div class="flex gap-2 items-start">
+                                    <div class="flex-grow"><label class="${labelStyle}">English Content</label><textarea id="news-content-en" class="${inputStyle} h-24"></textarea></div>
+                                    <button onclick="autoTranslate('news-content-zh', 'news-content-en')" class="mt-8 h-[50px] px-4 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition"><i data-lucide="languages"></i></button>
+                                </div>
+                                <button onclick="addNews()" class="${btnStyle} mt-2 w-full"><i data-lucide="save" class="inline w-4 h-4 mr-2"></i> 發布公告</button>
                             </div>
                         </div>
-                        <div class="flex-grow p-8 bg-white dark:bg-gray-900 overflow-y-auto">
-                            ${contentHtml}
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col h-[600px]">
+                            <h3 class="font-bold mb-4 text-xl dark:text-white">已發布列表</h3>
+                            <div class="overflow-y-auto flex-grow pr-2 space-y-1 custom-scrollbar">${list || `<div class="h-full flex items-center justify-center text-gray-400">暫無資料</div>`}</div>
                         </div>
                     </div>
                 `;
             }
+            else if (tab === 'events') {
+                 const list = APP_DATA.events.filter(e => e.id && !e.id.startsWith('e')).map(e => `
+                     <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-900 p-4 rounded-xl border border-gray-100 dark:border-gray-700 group hover:border-theme-200 transition mb-3">
+                        <div><p class="font-bold dark:text-white">${e.title_zh}</p><span class="text-xs text-gray-400">${e.date} | ${e.type}</span></div>
+                        <button onclick="deleteItem('events', '${e.id}')" class="text-gray-400 hover:text-red-500 p-2 hover:bg-red-50 rounded-lg transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                     </div>
+                `).join('');
+                contentHtml = `
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
+                         <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
+                             <h3 class="font-bold mb-6 text-xl dark:text-white flex items-center gap-2"><i data-lucide="calendar-plus" class="text-theme-500"></i> 新增活動</h3>
+                            <div class="space-y-4">
+                                <div><label class="${labelStyle}">中文名稱</label><input id="event-title-zh" class="${inputStyle}"></div>
+                                <div class="flex gap-2 items-end"><div class="flex-grow"><label class="${labelStyle}">English Title</label><input id="event-title-en" class="${inputStyle}"></div><button onclick="autoTranslate('event-title-zh', 'event-title-en')" class="h-[50px] px-4 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition"><i data-lucide="languages"></i></button></div>
+                                <div class="flex gap-4">
+                                    <div class="w-1/2"><label class="${labelStyle}">日期</label><input id="event-date" type="date" class="${inputStyle}"></div>
+                                    <div class="w-1/2"><label class="${labelStyle}">時間</label><input id="event-time" class="${inputStyle}" placeholder="ex: 08:00"></div>
+                                </div>
+                                <div><label class="${labelStyle}">中文地點</label><input id="event-loc-zh" class="${inputStyle}"></div>
+                                <div class="flex gap-2 items-end">
+                                     <div class="flex-grow"><label class="${labelStyle}">English Location</label><input id="event-loc-en" class="${inputStyle}"></div>
+                                     <button onclick="autoTranslate('event-loc-zh', 'event-loc-en')" class="h-[50px] px-4 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition"><i data-lucide="languages"></i></button>
+                                 </div>
+
+                                <div><label class="${labelStyle}">中文時間/備註</label><input id="event-time-zh" class="${inputStyle}" placeholder="08:00 或 依公告時間"></div>
+                                <div class="flex gap-2 items-end">
+                                     <div class="flex-grow"><label class="${labelStyle}">English Time/Note</label><input id="event-time-en" class="${inputStyle}"></div>
+                                     <button onclick="autoTranslate('event-time-zh', 'event-time-en')" class="h-[50px] px-4 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition"><i data-lucide="languages"></i></button>
+                                </div>
+
+                                <div><label class="${labelStyle}">連結 (選填)</label><input id="event-link" class="${inputStyle}" placeholder="https://..."></div>
+                                <div><label class="${labelStyle}">類型</label><select id="event-type" class="${inputStyle}"><option value="Activity">Activity (活動)</option><option value="Academic">Academic (教務)</option><option value="Holiday">Holiday (假日)</option></select></div>
+                                <button onclick="addEvent()" class="${btnStyle} mt-2 w-full">發布活動</button>
+                            </div>
+                         </div>
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col h-[600px]">
+                            <h3 class="font-bold mb-4 text-xl dark:text-white">活動列表</h3>
+                            <div class="overflow-y-auto flex-grow pr-2 custom-scrollbar">${list || `<div class="h-full flex items-center justify-center text-gray-400">暫無資料</div>`}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            else if (tab === 'photos') {
+                const list = APP_DATA.photos ? APP_DATA.photos.map(p => `
+                    <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-900 p-3 rounded-xl border border-gray-100 dark:border-gray-700 mb-3">
+                        <div class="flex items-center gap-4">
+                            <img src="${p.url}" class="w-12 h-12 object-cover rounded-lg">
+                            <div>
+                                <p class="font-bold dark:text-white text-sm truncate w-32">${p.title_zh}</p>
+                                <p class="text-[10px] text-gray-400 bg-gray-100 dark:bg-gray-800 px-1 rounded inline-block">${p.album || '未分類'}</p>
+                            </div>
+                        </div>
+                        <button onclick="deleteItem('photos', '${p.id}')" class="text-gray-400 hover:text-red-500 p-2 hover:bg-red-50 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </div>
+                `).join('') : '';
+                contentHtml = `
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
+                            <h3 class="font-bold mb-6 text-xl dark:text-white flex items-center gap-2"><i data-lucide="image-plus" class="text-theme-500"></i> 新增照片</h3>
+                            <div class="space-y-4">
+                                <div><label class="${labelStyle}">圖片網址 (URL)</label><input id="photo-url" class="${inputStyle}" placeholder="https://..."></div>
+                                <div><label class="${labelStyle}">中文標題</label><input id="photo-title-zh" class="${inputStyle}"></div>
+                                <div class="flex gap-2 items-end">
+                                    <div class="flex-grow"><label class="${labelStyle}">English Title</label><input id="photo-title-en" class="${inputStyle}"></div>
+                                    <button onclick="autoTranslate('photo-title-zh', 'photo-title-en')" class="h-[50px] px-4 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition"><i data-lucide="languages"></i></button>
+                                </div>
+                                <div><label class="${labelStyle}">相簿名稱 (Album)</label><input id="photo-album" class="${inputStyle}" placeholder="ex: 校慶運動會"></div>
+                                <button onclick="addPhoto()" class="${btnStyle} mt-2 w-full">新增照片</button>
+                            </div>
+                        </div>
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col h-[600px]">
+                            <h3 class="font-bold mb-4 text-xl dark:text-white">照片列表</h3>
+                            <div class="overflow-y-auto flex-grow pr-2 custom-scrollbar">${list || `<div class="h-full flex items-center justify-center text-gray-400">暫無資料</div>`}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            else if (tab === 'finance') {
+                const list = APP_DATA.finance.map(f => `
+                    <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-900 p-4 rounded-xl border border-gray-100 dark:border-gray-700 mb-3">
+                        <div><p class="font-bold dark:text-white">${f.item_zh}</p><span class="text-xs text-gray-400">${f.date} | $${f.amount}</span></div>
+                        <button onclick="deleteItem('finance', '${f.id}')" class="text-gray-400 hover:text-red-500 p-2 hover:bg-red-50 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </div>
+                `).join('');
+                contentHtml = `
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
+                            <h3 class="font-bold mb-6 text-xl dark:text-white flex items-center gap-2"><i data-lucide="dollar-sign" class="text-theme-500"></i> 新增收支</h3>
+                            <div class="space-y-4">
+                                <div><label class="${labelStyle}">日期</label><input id="fin-date" type="date" class="${inputStyle}"></div>
+                                <div><label class="${labelStyle}">中文項目名稱</label><input id="fin-item-zh" class="${inputStyle}"></div>
+                                <div class="flex gap-2 items-end">
+                                    <div class="flex-grow"><label class="${labelStyle}">English Item</label><input id="fin-item-en" class="${inputStyle}"></div>
+                                    <button onclick="autoTranslate('fin-item-zh', 'fin-item-en')" class="h-[50px] px-4 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition"><i data-lucide="languages"></i></button>
+                                </div>
+                                <div class="flex gap-4">
+                                    <div class="w-2/3"><label class="${labelStyle}">金額</label><input id="fin-amount" type="number" class="${inputStyle}" placeholder="1000"></div>
+                                    <div class="w-1/3"><label class="${labelStyle}">類型</label><select id="fin-type" class="${inputStyle}"><option value="In">收入 (+)</option><option value="Out">支出 (-)</option></select></div>
+                                </div>
+                                <button onclick="addFinance()" class="${btnStyle} mt-2 w-full">新增紀錄</button>
+                            </div>
+                        </div>
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col h-[600px]">
+                            <h3 class="font-bold mb-4 text-xl dark:text-white">財務列表</h3>
+                            <div class="overflow-y-auto flex-grow pr-2 custom-scrollbar">${list}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            else if (tab === 'meetings') {
+                 const list = APP_DATA.meetings.map(m => `
+                    <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-900 p-4 rounded-xl border border-gray-100 dark:border-gray-700 mb-3">
+                        <div><p class="font-bold dark:text-white">${m.title_zh}</p><span class="text-xs text-gray-400">${m.date}</span></div>
+                        <button onclick="deleteItem('meetings', '${m.id}')" class="text-gray-400 hover:text-red-500 p-2 hover:bg-red-50 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </div>
+                `).join('');
+                contentHtml = `
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
+                            <h3 class="font-bold mb-6 text-xl dark:text-white flex items-center gap-2"><i data-lucide="file-plus" class="text-theme-500"></i> 上傳會議記錄</h3>
+                            <div class="space-y-4">
+                                <div><label class="${labelStyle}">日期</label><input id="mt-date" type="date" class="${inputStyle}"></div>
+                                <div><label class="${labelStyle}">中文標題</label><input id="mt-title-zh" class="${inputStyle}"></div>
+                                <div class="flex gap-2 items-end">
+                                    <div class="flex-grow"><label class="${labelStyle}">English Title</label><input id="mt-title-en" class="${inputStyle}"></div>
+                                    <button onclick="autoTranslate('mt-title-zh', 'mt-title-en')" class="h-[50px] px-4 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition"><i data-lucide="languages"></i></button>
+                                </div>
+                                <div><label class="${labelStyle}">檔案連結 (Google Drive)</label><input id="mt-link" class="${inputStyle}" placeholder="https://..."></div>
+                                <button onclick="addMeeting()" class="${btnStyle} mt-2 w-full">發布紀錄</button>
+                            </div>
+                        </div>
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col h-[600px]">
+                            <h3 class="font-bold mb-4 text-xl dark:text-white">記錄列表</h3>
+                            <div class="overflow-y-auto flex-grow pr-2 custom-scrollbar">${list}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            else if (tab === 'downloads') {
+                 const list = APP_DATA.downloads.map(d => `
+                    <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-900 p-4 rounded-xl border border-gray-100 dark:border-gray-700 mb-3">
+                        <div><p class="font-bold dark:text-white">${d.title_zh}</p><span class="text-xs text-gray-400">${d.type}</span></div>
+                        <button onclick="deleteItem('downloads', '${d.id}')" class="text-gray-400 hover:text-red-500 p-2 hover:bg-red-50 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </div>
+                `).join('');
+                contentHtml = `
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
+                            <h3 class="font-bold mb-6 text-xl dark:text-white flex items-center gap-2"><i data-lucide="folder-plus" class="text-theme-500"></i> 新增下載資源</h3>
+                            <div class="space-y-4">
+                                <div><label class="${labelStyle}">日期</label><input id="dl-date" type="date" class="${inputStyle}"></div>
+                                <div><label class="${labelStyle}">中文標題</label><input id="dl-title-zh" class="${inputStyle}"></div>
+                                <div class="flex gap-2 items-end">
+                                    <div class="flex-grow"><label class="${labelStyle}">English Title</label><input id="dl-title-en" class="${inputStyle}"></div>
+                                    <button onclick="autoTranslate('dl-title-zh', 'dl-title-en')" class="h-[50px] px-4 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition"><i data-lucide="languages"></i></button>
+                                </div>
+                                <div><label class="${labelStyle}">檔案連結</label><input id="dl-link" class="${inputStyle}" placeholder="https://..."></div>
+                                <div><label class="${labelStyle}">類型</label><select id="dl-type" class="${inputStyle}"><option value="Event">Event (活動)</option><option value="Academic">Academic (教務)</option><option value="Other">Other (其他)</option></select></div>
+                                <button onclick="addDownload()" class="${btnStyle} mt-2 w-full">發布資源</button>
+                            </div>
+                        </div>
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col h-[600px]">
+                            <h3 class="font-bold mb-4 text-xl dark:text-white">資源列表</h3>
+                            <div class="overflow-y-auto flex-grow pr-2 custom-scrollbar">${list}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            else if (tab === 'system') {
+                let marqueeVal = '';
+                if(Array.isArray(SYSTEM_SETTINGS.marquee)) marqueeVal = SYSTEM_SETTINGS.marquee.join(' | ');
+                else marqueeVal = SYSTEM_SETTINGS.marquee;
+                const currentSize = SYSTEM_SETTINGS.marqueeSize || 'text-xs';
+                contentHtml = `
+                    <div class="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 max-w-2xl mx-auto">
+                        <h3 class="font-bold mb-6 dark:text-white text-xl flex items-center gap-2"><i data-lucide="settings" class="text-theme-500"></i> 系統全域設定</h3>
+                        
+                        <div class="mb-8">
+                            <label class="${labelStyle}">首頁跑馬燈內容</label>
+                            <textarea id="system-marquee" rows="4" class="${inputStyle}" placeholder="輸入文字... 若要分段顯示，請使用 | 符號分隔">${marqueeVal}</textarea>
+                            <p class="text-xs text-gray-400 mt-2 ml-1"><i data-lucide="info" class="inline w-3 h-3"></i> 提示：使用 " | " 符號來分隔多段跑馬燈訊息。</p>
+                        </div>
+                        
+                        <div class="mb-8">
+                            <label class="${labelStyle}">跑馬燈字體大小</label>
+                            <div class="flex items-center gap-4">
+                                <select id="system-marquee-size" class="${inputStyle}">
+                                    <option value="text-xs" ${currentSize === 'text-xs' ? 'selected' : ''}>最小 (Default)</option>
+                                    <option value="text-sm" ${currentSize === 'text-sm' ? 'selected' : ''}>小</option>
+                                    <option value="text-base" ${currentSize === 'text-base' ? 'selected' : ''}>中</option>
+                                    <option value="text-lg" ${currentSize === 'text-lg' ? 'selected' : ''}>大</option>
+                                    <option value="text-xl" ${currentSize === 'text-xl' ? 'selected' : ''}>特大</option>
+                                    <option value="text-2xl" ${currentSize === 'text-2xl' ? 'selected' : ''}>超大</option>
+                                </select>
+                                <span class="text-gray-500 text-sm">預覽: A+</span>
+                            </div>
+                        </div>
+
+                        <button onclick="saveSystemSettings()" class="${btnStyle} w-full"><i data-lucide="save" class="inline w-4 h-4 mr-1"></i> 儲存設定</button>
+                    </div>
+                `;
+            }
+
+            const navBtn = (key, icon, label) => `
+                <button onclick="switchAdminTab('${key}')" class="text-left px-4 py-3 rounded-xl transition-all flex items-center gap-3 font-bold ${tab===key ? 'bg-theme-500 text-white shadow-md' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'}">
+                    <i data-lucide="${icon}" class="w-5 h-5"></i> ${label}
+                </button>
+            `;
+
+            return `
+                <div class="bg-white dark:bg-gray-900 rounded-[2rem] shadow-2xl flex flex-col md:flex-row overflow-hidden border border-gray-100 dark:border-gray-800 min-h-[80vh]">
+                    <div class="w-full md:w-64 bg-gray-50 dark:bg-gray-950 p-6 flex flex-col gap-1 border-r border-gray-100 dark:border-gray-800">
+                        <div class="mb-8 px-2">
+                            <h2 class="text-2xl font-black text-theme-600 dark:text-theme-400 tracking-tight">${t('admin_dashboard')}</h2>
+                            <p class="text-xs text-gray-400 mt-1 truncate font-mono">${APP_STATE.user.email}</p>
+                        </div>
+                        ${navBtn('news', 'bell', t('admin_news'))}
+                        ${navBtn('events', 'calendar', t('admin_events'))}
+                        ${navBtn('photos', 'image', t('admin_photos'))}
+                        ${navBtn('finance', 'dollar-sign', t('admin_finance'))}
+                        ${navBtn('meetings', 'file-text', t('admin_meetings'))}
+                        ${navBtn('downloads', 'download', t('admin_downloads'))}
+                        ${navBtn('system', 'settings', t('admin_system'))}
+                        
+                        <div class="mt-auto pt-6 border-t border-gray-200 dark:border-gray-800">
+                            <button onclick="handleLogout()" class="w-full text-left px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 font-bold transition flex items-center gap-3">
+                                <i data-lucide="log-out" class="w-5 h-5"></i> ${t('admin_logout')}
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex-grow p-8 bg-white dark:bg-gray-900 overflow-y-auto">
+                        ${contentHtml}
+                    </div>
+                </div>
+            `;
         }
 
         // --- Core Render ---
@@ -1809,53 +1648,4 @@ if (location.hostname !== "localhost") { // 建議只在正式站啟用
                 if(el.dataset.key && I18N[APP_STATE.lang][el.dataset.key]) el.innerText = I18N[APP_STATE.lang][el.dataset.key];
             });
             const routes = {
-                'home': renderHome, 'events': renderEvents, 'mailboxes': renderMailboxes,
-                'gallery': renderGallery,
-                'org': renderOrg, 'finance': renderFinance, 'clubs': renderClubs, 'downloads': renderDownloads,
-                'contact': renderContact, 'meetings': renderMeetings, 'admin': renderAdmin
-            };
-            // 安全渲染
-            try {
-                container.innerHTML = routes[view] ? routes[view]() : renderHome();
-            } catch (e) {
-                console.error("Render Error:", e);
-                container.innerHTML = `<div class="p-10 text-center text-red-500">頁面載入錯誤，請稍後再試。<br><small>${e.message}</small></div>`;
-            }
-            
-            lucide.createIcons();
-            window.scrollTo(0,0);
-        }
-
-        window.navigate = (view) => {
-            APP_STATE.view = view;
-            APP_STATE.eventFilter = 'All';
-            APP_STATE.galleryView = 'albums'; // Reset gallery view
-            document.getElementById('mobile-menu').classList.add('hidden');
-            render();
-        };
-
-        window.toggleLang = () => {
-            APP_STATE.lang = APP_STATE.lang === 'zh' ? 'en' : 'zh';
-            document.getElementById('lang-display').innerText = APP_STATE.lang.toUpperCase();
-            const searchInput = document.getElementById('search-input');
-            if(searchInput) searchInput.placeholder = t('searchPlaceholder');
-            render();
-        };
-        window.toggleDarkMode = () => {
-            APP_STATE.darkMode = !APP_STATE.darkMode;
-            document.documentElement.classList.toggle('dark');
-            document.getElementById('dark-icon').classList.toggle('hidden');
-            document.getElementById('light-icon').classList.toggle('hidden');
-        };
-
-        document.getElementById('menu-button').addEventListener('click', () => {
-            document.getElementById('mobile-menu').classList.toggle('hidden');
-        });
-        // Init
-        (async () => {
-            await loadDataFromFirebase();
-            render();
-        })();
-    </script>
-</body>
-</html>
+                'home': renderHome, 'events':
