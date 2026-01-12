@@ -11,6 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
 
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.8/purify.min.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -314,6 +315,25 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, getDocs, getDoc, setDoc, addDoc, deleteDoc, doc, serverTimestamp, query, orderBy, limit, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        // 原本的 import
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+// ... 其他 import ...
+
+// [新增] 引入 App Check
+import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check.js";
+
+// ... 原本的 Config ...
+
+const app = initializeApp(firebaseConfig);
+
+// [新增] 啟用 App Check (貼在 initializeApp 之後)
+// 注意：要把 '你的_SITE_KEY' 換成你剛剛在 reCAPTCHA 申請到的那串公鑰
+if (location.hostname !== "localhost") { // 建議只在正式站啟用
+    const appCheck = initializeAppCheck(app, {
+        provider: new ReCaptchaV3Provider('6LcZA0gsAAAAAEHxUZAjATy05QzBQKkOG1wPfEtk'),
+        isTokenAutoRefreshEnabled: true
+    });
+}
 
         // ============================================
         // ⚠️ Config (請確保這裡填入你的 Firebase Config)
@@ -484,25 +504,39 @@
         }
 
         function formatContent(text) {
-            if (!text) return '';
-            if (/<[a-z][\s\S]*>/i.test(text) && !text.startsWith('http')) return text;
-            const urlRegex = /(https?:\/\/[^\s]+)/g;
-            return text.replace(urlRegex, (url) => {
-                const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
-                if (ytMatch && ytMatch[1]) {
-                    return `<div class="my-4 w-full aspect-video"><iframe src="https://www.youtube.com/embed/${ytMatch[1]}" class="w-full h-full rounded-2xl shadow-lg border-2 border-white dark:border-gray-700" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
-                }
-                if (url.toLowerCase().endsWith('.pdf')) {
-                    let filename = '下載 PDF 文件';
-                    try { filename = decodeURIComponent(new URL(url).pathname.split('/').pop()); } catch(e){}
-                    return `<a href="${url}" target="_blank" class="btn-link group block mt-3 w-full text-center bg-gradient-to-r from-red-50 to-white border border-red-200 text-red-600 rounded-xl py-3.5 hover:from-red-100 hover:to-red-50 hover:shadow-md transition-all font-bold"><i data-lucide="file-down" class="inline-block mr-2 w-5 h-5 group-hover:scale-110 transition-transform"></i>${filename}</a>`;
-                }
-                if (/\.(jpeg|jpg|gif|png)$/i.test(url)) {
-                     return `<img src="${url}" class="mt-3 rounded-2xl shadow-lg max-h-80 mx-auto border-4 border-white dark:border-gray-700 hover:scale-[1.02] transition-transform" alt="Image">`;
-                }
-                return `<a href="${url}" target="_blank" class="text-theme-600 font-bold hover:text-theme-700 transition-colors inline-flex items-center gap-1 border-b-2 border-theme-200 hover:border-theme-500 pb-0.5">🔗 開啟連結 <i data-lucide="external-link" class="w-3 h-3"></i></a>`;
-            });
+    if (!text) return '';
+
+    // 1. 設定：允許 iframe (為了 YouTube) 和 img，以及一些基本屬性
+    const config = {
+        ADD_TAGS: ['iframe', 'img'],
+        ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'src', 'alt', 'class', 'target'],
+    };
+
+    // 2. 先進行網址轉換 (把網址變成 HTML 字串)
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    let processedText = text.replace(urlRegex, (url) => {
+        // YouTube 轉換
+        const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
+        if (ytMatch && ytMatch[1]) {
+            return `<div class="my-4 w-full aspect-video"><iframe src="https://www.youtube.com/embed/${ytMatch[1]}" class="w-full h-full rounded-2xl shadow-lg" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
         }
+        // PDF 下載按鈕轉換
+        if (url.toLowerCase().endsWith('.pdf')) {
+            let filename = '下載 PDF 文件';
+            try { filename = decodeURIComponent(new URL(url).pathname.split('/').pop()); } catch(e){}
+            return `<a href="${url}" target="_blank" class="btn-link group block mt-3 w-full text-center bg-gray-100 text-blue-600 rounded-xl py-3 font-bold"><i data-lucide="file-down" class="inline-block mr-2 w-5 h-5"></i>${filename}</a>`;
+        }
+        // 圖片轉換
+        if (/\.(jpeg|jpg|gif|png)$/i.test(url)) {
+             return `<img src="${url}" class="mt-3 rounded-2xl shadow-lg max-h-80 mx-auto" alt="Image">`;
+        }
+        // 一般連結
+        return `<a href="${url}" target="_blank" class="text-theme-600 font-bold hover:underline">🔗 開啟連結</a>`;
+    });
+
+    // 3. 最後用 DOMPurify 清洗 (消毒)，確保沒有惡意腳本
+    return DOMPurify.sanitize(processedText, config);
+}
 
         // --- Firebase Data Handling ---
         async function loadDataFromFirebase() {
@@ -1433,25 +1467,49 @@
 
         // --- Admin System ---
         function renderAdmin() {
-            if (!APP_STATE.user) {
-                // Login Form
-                return `
-                    <div class="max-w-sm mx-auto bg-white dark:bg-gray-800 p-10 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-700 mt-20 relative overflow-hidden">
-                        <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-theme-400 to-blue-500"></div>
-                        <h1 class="text-3xl font-black mb-8 dark:text-white text-center tracking-tight">${t('login_title')}</h1>
-                        <form onsubmit="handleLogin(event)" class="space-y-6">
-                            <div>
-                                <label class="block text-xs font-bold mb-2 dark:text-gray-300 uppercase tracking-widest text-gray-500">${t('login_email')}</label>
-                                <input type="email" id="admin-email" required class="w-full p-3.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl dark:text-white focus:outline-none focus:ring-2 focus:ring-theme-500 focus:border-transparent transition-all shadow-inner" placeholder="admin@pksh.su">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold mb-2 dark:text-gray-300 uppercase tracking-widest text-gray-500">${t('login_pwd')}</label>
-                                <input type="password" id="admin-pwd" required class="w-full p-3.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl dark:text-white focus:outline-none focus:ring-2 focus:ring-theme-500 focus:border-transparent transition-all shadow-inner" placeholder="••••••••">
-                            </div>
-                            <button type="submit" class="w-full bg-gradient-to-r from-theme-500 to-theme-700 text-white py-4 rounded-xl hover:shadow-lg hover:scale-[1.02] active:scale-95 transition-all font-bold text-lg shadow-theme-500/30">${t('login_btn')}</button>
-                        </form>
+    // 嚴格檢查：如果沒有使用者登入，直接回傳登入表單的 HTML
+    if (!APP_STATE.user) {
+        return `
+            <div class="max-w-sm mx-auto bg-white dark:bg-gray-800 p-10 rounded-3xl shadow-2xl mt-20">
+                <h1 class="text-3xl font-black mb-8 dark:text-white text-center">學生會幹部登入</h1>
+                <form onsubmit="handleLogin(event)" class="space-y-6">
+                    <div>
+                        <label class="block text-xs font-bold mb-2 text-gray-500">電子郵件</label>
+                        <input type="email" id="admin-email" required class="w-full p-3 bg-gray-50 border rounded-xl" placeholder="admin@pksh.su">
                     </div>
-                `;
+                    <div>
+                        <label class="block text-xs font-bold mb-2 text-gray-500">密碼</label>
+                        <input type="password" id="admin-pwd" required class="w-full p-3 bg-gray-50 border rounded-xl" placeholder="••••••••">
+                    </div>
+                    <button type="submit" class="w-full bg-theme-600 text-white py-4 rounded-xl font-bold hover:bg-theme-700 transition">登入系統</button>
+                </form>
+            </div>
+        `;
+    }
+
+    // --- 以下是原本登入後才能看到的內容 (只有通過上面的檢查才會執行到這) ---
+    const tab = APP_STATE.adminTab;
+    let contentHtml = '';
+    
+    // ... (保留你原本 之後的那些 switchTab 邏輯，或是直接用你原本的程式碼接在下面) ...
+    // 因篇幅關係，請確保這裡接回你原本第 380 行 else 裡面的所有內容
+    
+    // *重要*：因為我們改變了寫法，原本第 380 行的 `else {` 和第 480 行對應的 `}` 要拿掉，讓程式碼變平整。
+    
+    // 為避免貼錯，我建議你直接修改原本第 374 行：
+    // 把 `if (!APP_STATE.user) { ... } else { ... }` 
+    // 改成 `if (!APP_STATE.user) { return ...; }` (拿掉 else，直接往下寫)
+    
+    // ... 以下貼上你原本第 381 行到 479 行的程式碼 ...
+    const inputStyle = "w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white focus:ring-2 focus:ring-theme-500 focus:outline-none transition-shadow";
+    // ... (你原本的後台邏輯不用動) ...
+    
+    return `
+        <div class="bg-white dark:bg-gray-900 rounded-[2rem] ...">
+           ... (你原本的後台外框 HTML) ...
+        </div>
+    `;
+}
             } else {
                 const tab = APP_STATE.adminTab;
                 let contentHtml = '';
