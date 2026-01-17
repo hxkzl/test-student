@@ -1864,9 +1864,14 @@ initializeAppCheck(app, {
                         // 1. 滑動到該元素
                         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         // 2. 加上高亮效果 (閃爍邊框)
-                        el.classList.add('ring-4', 'ring-theme-400', 'transition-all', 'duration-500');
+                        el.classList.add('ring-8', 'ring-yellow-400', 
+                            'bg-yellow-100', 'dark:bg-yellow-900', 
+                            'scale-110', 'z-10', 
+                            'transition-all', 'duration-500');
                         // 3. 兩秒後移除
-                        setTimeout(() => el.classList.remove('ring-4', 'ring-theme-400'), 2000);
+                        setTimeout(() => el.classList.remove('ring-8', 'ring-yellow-400', 
+                                'bg-yellow-100', 'dark:bg-yellow-900', 
+                                'scale-110', 'z-10'), 2000);
                     }
                 }, 500); // 延遲 0.5 秒確保畫面已畫好
                 APP_STATE.targetId = null; // 清空目標
