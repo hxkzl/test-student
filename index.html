@@ -1383,7 +1383,7 @@ initializeAppCheck(app, {
         }
 
         function renderFinance() {
-            // 全域變數存圖表
+           // [變數] 放在 function 外面，避免重複宣告錯誤
         let financeChartInstance = null;
 
         function renderFinance() {
@@ -1401,36 +1401,36 @@ initializeAppCheck(app, {
                 </tr>
             `).join('');
 
-            // [新增] 繪製長條圖 (Bar Chart)
+            // 繪製長條圖 (Bar Chart)
             setTimeout(() => {
                 const ctx = document.getElementById('financeChart');
                 if (ctx) {
                     if (financeChartInstance) financeChartInstance.destroy();
                     
                     financeChartInstance = new Chart(ctx, {
-                        type: 'bar', // 改用 Bar Chart
+                        type: 'bar',
                         data: {
                             labels: [isEn() ? 'Total Income' : '總收入', isEn() ? 'Total Expense' : '總支出'],
                             datasets: [{
                                 label: 'Amount (TWD)',
                                 data: [totalIncome, totalExpense],
                                 backgroundColor: [
-                                    'rgba(20, 184, 166, 0.8)', // theme-500 (綠色)
-                                    'rgba(239, 68, 68, 0.8)'   // red-500 (紅色)
+                                    'rgba(20, 184, 166, 0.8)', // theme-500
+                                    'rgba(239, 68, 68, 0.8)'   // red-500
                                 ],
                                 borderColor: [
                                     '#14b8a6',
                                     '#ef4444'
                                 ],
                                 borderWidth: 2,
-                                borderRadius: 8 // 圓角柱狀
+                                borderRadius: 8
                             }]
                         },
                         options: {
                             responsive: true,
                             maintainAspectRatio: false,
                             plugins: {
-                                legend: { display: false } // 長條圖不需要上方圖例
+                                legend: { display: false }
                             },
                             scales: {
                                 y: {
