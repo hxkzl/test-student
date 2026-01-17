@@ -876,17 +876,15 @@ initializeAppCheck(app, {
             const queryText = document.getElementById('search-input').value.toLowerCase().trim();
             const resultsDiv = document.getElementById('search-results');
             
-            // 改良 1: 只要輸入 1 個字就開始搜尋，反應更快
             if (queryText.length < 1) {
                 resultsDiv.innerHTML = '';
                 return;
             }
 
             const hits = [];
-            // 輔助函式：檢查任何文字欄位是否包含關鍵字
             const check = (text) => text && text.toLowerCase().includes(queryText);
 
-            // 1. 搜尋公告 (增加搜尋內文 + 中英文同時搜)
+            // 1. 公告
             APP_DATA.announcements.forEach(a => {
                 if (check(a.title_zh) || check(a.title_en) || check(a.content_zh) || check(a.content_en)) {
                     hits.push({ 
@@ -894,12 +892,13 @@ initializeAppCheck(app, {
                         title: val(a, 'title'), 
                         date: a.date, 
                         icon: 'bell',
-                        key: 'home' // 點擊後去首頁
+                        key: 'home',
+                        id: a.id // [新增] 傳送 ID
                     });
                 }
             });
 
-            // 2. 搜尋活動 (增加搜尋地點)
+            // 2. 活動
             APP_DATA.events.forEach(e => {
                 if (check(e.title_zh) || check(e.title_en) || check(e.location_zh) || check(e.location_en)) {
                     hits.push({ 
@@ -907,25 +906,13 @@ initializeAppCheck(app, {
                         title: val(e, 'title'), 
                         date: e.date, 
                         icon: 'calendar',
-                        key: 'events' // 點擊後去活動頁
+                        key: 'events',
+                        id: e.id // [新增] 傳送 ID
                     });
                 }
             });
-
-            // 3. 搜尋社團 (新增功能！)
-            APP_DATA.clubs.forEach(c => {
-                if (check(c.name_zh) || check(c.name_en)) {
-                    hits.push({ 
-                        type: isEn() ? 'Club' : '社團', 
-                        title: val(c, 'name'), 
-                        date: c.category, 
-                        icon: 'users',
-                        key: 'clubs' // 點擊後去社團頁
-                    });
-                }
-            });
-
-            // 4. 搜尋下載區 (新增功能！)
+            
+            // 3. 下載
             APP_DATA.downloads.forEach(d => {
                 if (check(d.title_zh) || check(d.title_en)) {
                     hits.push({ 
@@ -933,17 +920,18 @@ initializeAppCheck(app, {
                         title: val(d, 'title'), 
                         date: d.date, 
                         icon: 'download',
-                        key: 'downloads' // 點擊後去下載頁
+                        key: 'downloads',
+                        id: d.id // [新增] 傳送 ID
                     });
                 }
             });
 
-            // 渲染結果
+            // 渲染結果 (注意 onclick 多了第二個參數)
             if (hits.length === 0) {
                 resultsDiv.innerHTML = `<div class="text-center text-white/80 text-lg mt-10 font-medium">${t('noResults')}</div>`;
             } else {
                 resultsDiv.innerHTML = hits.map(h => `
-                    <div onclick="navigate('${h.key}'); toggleSearch();" class="bg-white dark:bg-gray-800 p-4 rounded-xl flex items-center gap-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-all shadow-md hover:scale-[1.02]">
+                    <div onclick="navigate('${h.key}', '${h.id}'); toggleSearch();" class="bg-white dark:bg-gray-800 p-4 rounded-xl flex items-center gap-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-all shadow-md hover:scale-[1.02]">
                         <div class="bg-theme-50 dark:bg-theme-900/30 p-2.5 rounded-full text-theme-600 dark:text-theme-400 shrink-0">
                             <i data-lucide="${h.icon}"></i>
                         </div>
