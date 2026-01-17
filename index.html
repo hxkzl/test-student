@@ -1083,7 +1083,6 @@ initializeAppCheck(app, {
 
         // 下面接著原本的 renderHome...
         function renderHome() {
-        function renderHome() {
             const announcements = APP_DATA.announcements;
             // [修正] 這裡加上了 id="${item.id}"
             const newsHtml = announcements.map(item => `
@@ -1382,8 +1381,7 @@ initializeAppCheck(app, {
             `;
         }
 
-        function renderFinance() {
-           // [變數] 放在 function 外面，避免重複宣告錯誤
+        // 🟢 [變數] 放在 function 外面 (這行非常重要，不能被包在裡面)
         let financeChartInstance = null;
 
         function renderFinance() {
