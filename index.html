@@ -1857,23 +1857,37 @@ initializeAppCheck(app, {
             lucide.createIcons();
 
             // [新增] 自動滑動定位邏輯
+            // --- 請貼上這段新的 ---
             if (APP_STATE.targetId) {
                 setTimeout(() => {
                     const el = document.getElementById(APP_STATE.targetId);
                     if (el) {
-                        // 1. 滑動到該元素
+                        // 1. 滑動到該元素 (置中)
                         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        // 2. 加上高亮效果 (閃爍邊框)
-                        el.classList.add('ring-4', 'ring-theme-400', 'transition-all', 'duration-500');
-                        // 3. 兩秒後移除
-                        setTimeout(() => el.classList.remove('ring-4', 'ring-theme-400'), 2000);
+                        
+                        // 2. [修改] 加上強力高亮效果
+                        el.classList.add(
+                            'ring-8', 'ring-yellow-400', 
+                            'bg-yellow-100', 'dark:bg-yellow-900', 
+                            'scale-110', 'z-10', 
+                            'transition-all', 'duration-500'
+                        );
+                        
+                        // 3. [修改] 2.5 秒後移除效果 (時間稍微拉長一點)
+                        setTimeout(() => {
+                            el.classList.remove(
+                                'ring-8', 'ring-yellow-400', 
+                                'bg-yellow-100', 'dark:bg-yellow-900', 
+                                'scale-110', 'z-10'
+                            );
+                        }, 2500);
                     }
-                }, 500); // 延遲 0.5 秒確保畫面已畫好
-                APP_STATE.targetId = null; // 清空目標
+                }, 500); 
+                
+                APP_STATE.targetId = null; 
             } else {
                 window.scrollTo(0,0);
             }
-        }
 
         // 修改後的 navigate，多了一個 targetId 參數
         window.navigate = (view, targetId = null) => {
